@@ -1,0 +1,102 @@
+# Tutorial: Set up W&B Launch on Vertex AI
+
+Source: https://docs.coreweave.com/products/wandb/platform/launch/setup-vertex
+
+# Tutorial: Set up W&B Launch on Vertex AI
+
+> Set up W&B Launch on Google Cloud Vertex AI using CustomJob specs and Artifact Registry for ML workloads.
+
+This tutorial walks you through configuring W\&B Launch to submit jobs for execution as Vertex AI training jobs, so you can offload training workloads to Google Cloud's managed infrastructure. With Vertex AI training jobs, you can train machine learning models using either provided or custom algorithms on the Vertex AI platform. After you start a launch job, Vertex AI manages the underlying infrastructure, scaling, and orchestration. This guide is for ML engineers and platform administrators who already use W\&B Launch and want to run jobs on Google Cloud Vertex AI.
+
+W\&B Launch works with Vertex AI through the `CustomJob` class in the `google-cloud-aiplatform` SDK. You can control the parameters of a `CustomJob` with the launch queue configuration. You can't configure Vertex AI to pull images from a private registry outside of Google Cloud. This means that you must store container images in Google Cloud or in a public registry if you want to use Vertex AI with W\&B Launch. See the Vertex AI documentation for more information about making container images accessible to Vertex jobs.
+
+## Prerequisites
+
+Before you configure a Launch queue, make sure the following Google Cloud resources and permissions are in place:
+
+1. **Create or access a Google Cloud project with the Vertex AI API enabled.** See the [Google Cloud API Console docs](https://support.google.com/googleapi/answer/6158841?hl=en) for more information about enabling an API.
+2. **Create a Google Cloud Artifact Registry repository** to store images you want to execute on Vertex. See the [Google Cloud Artifact Registry documentation](https://cloud.google.com/artifact-registry/docs/overview) for more information.
+3. **Create a staging GCS bucket** for Vertex AI to store its metadata. This bucket must be in the same region as your Vertex AI workloads to serve as a staging bucket. You can use the same bucket for staging and build contexts.
+4. **Create a service account** with the necessary permissions to spin up Vertex AI jobs. See the [Google Cloud IAM documentation](https://cloud.google.com/iam/docs/creating-managing-service-accounts) for more information about assigning permissions to service accounts.
+5. **Grant your service account permission to manage Vertex jobs**, as shown in the following table:
+
+   | Permission | Resource Scope | Description |
+   | - | - | - |
+   | `aiplatform.customJobs.create` | Specified Google Cloud Project | Lets you create new machine learning jobs within the project. |
+   | `aiplatform.customJobs.list` | Specified Google Cloud Project | Lets you list machine learning jobs within the project. |
+   | `aiplatform.customJobs.get` | Specified Google Cloud Project | Lets you retrieve information about specific machine learning jobs within the project. |
+
+> [!NOTE]
+>
+> If you want your Vertex AI workloads to assume the identity of a non-standard service account, refer to the Vertex AI documentation for instructions about service account creation and necessary permissions. Use the `spec.service_account` field of the launch queue configuration to select a custom service account for your W\&B runs.
+
+## Configure a queue for Vertex AI
+
+With your Google Cloud prerequisites in place, the next step is to plan the queue configuration that W\&B Launch uses to submit Vertex AI jobs. The queue configuration for Vertex AI resources specifies inputs to the `CustomJob` constructor in the Vertex AI Python SDK, and the `run` method of the `CustomJob`. Resource configurations are stored under the `spec` and `run` keys:
+
+* The `spec` key contains values for the named arguments of the [`CustomJob` constructor](https://cloud.google.com/vertex-ai/docs/pipelines/customjob-component) in the Vertex AI Python SDK.
+* The `run` key contains values for the named arguments of the `run` method of the `CustomJob` class in the Vertex AI Python SDK.
+
+Customization of the execution environment happens in the `spec.worker_pool_specs` list. A worker pool spec defines a group of workers that run your job. The worker spec in the default config asks for a single `n1-standard-4` machine with no accelerators. You can change the machine type, accelerator type, and count to suit your needs.
+
+For more information about available machine types and accelerator types, see the [Vertex AI documentation](https://cloud.google.com/vertex-ai/docs/reference/rest/v1/MachineSpec).
+
+## Create a queue
+
+Now that you have planned your queue configuration, create a queue in the W\&B App that uses Vertex AI as its compute resource:
+
+1. Navigate to the [Launch page](https://forge.coreweave.com/wandb/launch).
+
+2. Click the **Create Queue** button.
+
+3. Select the **Entity** you want to create the queue in.
+
+4. Provide a name for your queue in the **Name** field.
+
+5. Select **Google Cloud Vertex AI** as the **Resource**.
+
+6. Within the **Configuration** field, provide information about your Vertex AI `CustomJob` you defined in [Configure a queue for Vertex AI](#configure-a-queue-for-vertex-ai). By default, Weights & Biases populates a YAML and JSON request body similar to the following:
+
+   ```yaml theme={"system"}
+   spec:
+     worker_pool_specs:
+       - machine_spec:
+           machine_type: n1-standard-4
+           accelerator_type: ACCELERATOR_TYPE_UNSPECIFIED
+           accelerator_count: 0
+         replica_count: 1
+         container_spec:
+           image_uri: ${image_uri}
+     staging_bucket: [STAGING-BUCKET]
+   run:
+     restart_job_on_worker_restart: false
+   ```
+
+7. After you configure your queue, click the **Create Queue** button.
+
+At minimum, you must specify the following fields:
+
+* `spec.worker_pool_specs`: non-empty list of worker pool specifications.
+* `spec.staging_bucket`: GCS bucket for staging Vertex AI assets and metadata.
+
+> [!WARNING]
+>
+> Some of the Vertex AI docs show worker pool specifications with all keys in camel case, for example, `workerPoolSpecs`. The Vertex AI Python SDK uses snake case for these keys, for example, `worker_pool_specs`.
+>
+> Every key in the launch queue configuration should use snake case.
+
+## Configure a launch agent
+
+With the queue created, configure a launch agent to poll the queue and dispatch jobs to Vertex AI. The launch agent is configurable through a config file that is, by default, located at `~/.config/wandb/launch-config.yaml`.
+
+```yaml theme={"system"}
+max_jobs: [N-CONCURRENT-JOBS]
+queues:
+  - [QUEUE-NAME]
+```
+
+If you want the launch agent to build images for you that are executed in Vertex AI, see [Advanced agent set up](https://docs.coreweave.com/products/wandb/platform/launch/setup-agent-advanced.md).
+
+## Set up agent permissions
+
+Finally, give the launch agent the credentials it needs to act as the service account you created in the prerequisites. Multiple methods exist to authenticate as this service account. You can authenticate through Workload Identity, a downloaded service account JSON, environment variables, the Google Cloud Platform command-line tool, or a combination of these methods.

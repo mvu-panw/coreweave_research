@@ -1,0 +1,63 @@
+# Automation
+
+Source: https://docs.coreweave.com/products/wandb/ref/python/automations/automation
+
+# Automation
+
+[View source](https://github.com/wandb/wandb/blob/main/wandb/automations/automations.py#L19)
+
+## Class wandb.automations.Automation
+
+A local instance of a saved W\&B automation that supports editing.
+
+```python theme={"system"}
+*,
+__typename: Literal['Trigger'] = 'Trigger',
+id: Annotated[str, Strict(strict=True)],
+createdAt: datetime.datetime,
+updatedAt: datetime.datetime | None = None,
+name: str,
+description: str | None,
+enabled: bool,
+scope: Annotated[Union[Annotated[wandb.automations.scopes._ArtifactSequenceScope | wandb.automations.scopes._ArtifactPortfolioScope, BeforeValidator(func=<function parse_scope>, json_schema_input_type=PydanticUndefined), Discriminator(discriminator='typename__', custom_error_type=None, custom_error_message=None, custom_error_context=None)], Annotated[wandb.automations.scopes.RegistryScope | wandb.automations.scopes.ProjectScope, BeforeValidator(func=<function parse_scope>, json_schema_input_type=PydanticUndefined), Discriminator(discriminator='is_registry', custom_error_type=None, custom_error_message=None, custom_error_context=None)], Annotated[wandb.automations.scopes.TeamScope | wandb.automations.scopes.OrgScope, BeforeValidator(func=<function parse_scope>, json_schema_input_type=PydanticUndefined), Discriminator(discriminator='entity_type', custom_error_type=None, custom_error_message=None, custom_error_context=None)]], BeforeValidator(func=<function parse_scope>, json_schema_input_type=PydanticUndefined), Discriminator(discriminator='typename__', custom_error_type=None, custom_error_message=None, custom_error_context=None)],
+event: wandb.automations.events.SavedEvent,
+action: Annotated[wandb.automations.actions.SavedLaunchJobAction | wandb.automations.actions.SavedNotificationAction | wandb.automations.actions.SavedWebhookAction | wandb.automations.actions.SavedNoOpAction | wandb.automations.actions.SavedAriaAction, BeforeValidator(func=<function parse_saved_action>, json_schema_input_type=PydanticUndefined)]
+```
+
+## Args
+
+**id** `Annotated`
+
+No description provided.
+
+**createdAt** `datetime`
+
+The date and time when this automation was created.
+
+**updatedAt** `datetime.datetime | None`
+
+The date and time when this automation was last updated, if applicable.
+
+**name** `str`
+
+The name of this automation.
+
+**description** `str | None`
+
+An optional description of this automation.
+
+**enabled** `bool`
+
+Whether this automation is enabled.  Only enabled automations will trigger.
+
+**scope** `Annotated`
+
+The scope in which the triggering event must occur.
+
+**event** `SavedEvent`
+
+The event that will trigger this automation.
+
+**action** `Annotated`
+
+The action that will execute when this automation is triggered.

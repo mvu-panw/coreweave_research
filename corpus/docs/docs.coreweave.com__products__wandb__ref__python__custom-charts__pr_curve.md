@@ -1,0 +1,93 @@
+# 'str' = 'Precision-Recall Curve',
+
+Source: https://docs.coreweave.com/products/wandb/ref/python/custom-charts/pr_curve
+
+# pr_curve()
+
+[View source](https://github.com/wandb/wandb/blob/main/wandb/plot/pr_curve.py#L19)
+
+## function wandb.plot.pr\_curve()
+
+Constructs a Precision-Recall (PR) curve.
+
+The Precision-Recall curve is particularly useful for evaluating classifiers
+on imbalanced datasets. A high area under the PR curve signifies both high
+precision (a low false positive rate) and high recall (a low false negative
+rate). The curve provides insights into the balance between false positives
+and false negatives at various threshold levels, aiding in the assessment of
+a model's performance.
+
+```python theme={"system"}
+y_true: 'Iterable[T] | None' = None,
+y_probas: 'Iterable[numbers.Number] | None' = None,
+labels: 'list[str] | None' = None,
+classes_to_plot: 'list[T] | None' = None,
+interp_size: 'int' = 21,
+title: 'str' = 'Precision-Recall Curve',
+split_table: 'bool' = False
+```
+
+## Args
+
+**y\_true** `Iterable[T] | None`
+
+True binary labels. The shape should be (`num_samples`,).
+
+**y\_probas** `Iterable[numbers.Number] | None`
+
+Predicted scores or probabilities for each class. These can be probability estimates, confidence scores, or non-thresholded decision values. The shape should be (`num_samples`, `num_classes`).
+
+**labels** `list[str] | None`
+
+Optional list of class names to replace numeric values in `y_true` for easier plot interpretation. For example, `labels = ['dog', 'cat', 'owl']` will replace 0 with 'dog', 1 with 'cat', and 2 with 'owl' in the plot. If not provided, numeric values from `y_true` will be used.
+
+**classes\_to\_plot** `list[T] | None`
+
+Optional list of unique class values from y\_true to be included in the plot. If not specified, all unique classes in y\_true will be plotted.
+
+**interp\_size** `int`
+
+Number of points to interpolate recall values. The recall values will be fixed to `interp_size` uniformly distributed points in the range \[0, 1], and the precision will be interpolated accordingly.
+
+**title** `str`
+
+Title of the plot. Defaults to "Precision-Recall Curve".
+
+**split\_table** `bool`
+
+Whether the table should be split into a separate section in the W\&B UI. If `True`, the table will be displayed in a section named "Custom Chart Tables". Default is `False`.
+
+## Returns
+
+`CustomChart`: A custom chart object that can be logged to W\&B. To log the chart, pass it to `wandb.log()`.
+
+## Raises
+
+* `wandb.Error`: If NumPy, pandas, or scikit-learn is not installed.
+
+## Examples
+
+```python theme={"system"}
+import wandb
+
+# Example for spam detection (binary classification)
+y_true = [0, 1, 1, 0, 1]  # 0 = not spam, 1 = spam
+y_probas = [
+    [0.9, 0.1],  # Predicted probabilities for the first sample (not spam)
+    [0.2, 0.8],  # Second sample (spam), and so on
+    [0.1, 0.9],
+    [0.8, 0.2],
+    [0.3, 0.7],
+]
+
+labels = ["not spam", "spam"]  # Optional class names for readability
+
+with wandb.init(project="spam-detection") as run:
+    pr_curve = wandb.plot.pr_curve(
+        y_true=y_true,
+        y_probas=y_probas,
+        labels=labels,
+        title="Precision-Recall Curve for Spam Detection",
+    )
+    run.log({"pr-curve": pr_curve})
+```

@@ -1,0 +1,22 @@
+# How to make W&B Launch work with TensorFlow on GPU
+
+Source: https://docs.coreweave.com/products/wandb/platform/launch/launch-faq/launch_tensorflow_gpu
+
+# How to make W&B Launch work with TensorFlow on GPU
+
+To run TensorFlow jobs on GPUs with W\&B Launch, specify a custom base image for the container build. This lets the resulting container access the GPU. Add an image tag under the `builder.accelerator.base_image` key in the resource configuration. For example:
+
+```json theme={"system"}
+{
+    "gpus": "all",
+    "builder": {
+        "accelerator": {
+            "base_image": "tensorflow/tensorflow:latest-gpu"
+        }
+    }
+}
+```
+
+> [!NOTE]
+>
+> In versions before W\&B Python SDK 0.15.6, use `cuda` instead of `accelerator` as the parent key for `base_image`.

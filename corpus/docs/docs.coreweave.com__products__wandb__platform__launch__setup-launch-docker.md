@@ -1,0 +1,136 @@
+# Tutorial: Set up W&B Launch with Docker
+
+Source: https://docs.coreweave.com/products/wandb/platform/launch/setup-launch-docker
+
+# Tutorial: Set up W&B Launch with Docker
+
+> Set up W&B Launch to run ML jobs using Docker on a local machine as both the agent environment and compute target.
+
+This tutorial describes how to configure W\&B Launch to use Docker on a local machine for both the launch agent environment and for the queue's target resource. By the end, you have a working Docker-based launch queue and a local launch agent ready to run ML jobs.
+
+Using Docker to run jobs and as the launch agent's environment on the same local machine is useful if your compute is installed on a machine that doesn't have a cluster management system (such as Kubernetes). You can also use Docker queues to run workloads on workstations.
+
+> [!NOTE]
+>
+> This setup is common for users who run experiments on their local machine, or who SSH into a remote machine to submit launch jobs.
+
+When you use Docker with Launch, Weights & Biases first builds an image, and then builds and runs a container from that image. Weights & Biases builds the image with the Docker `docker run [IMAGE-URI]` command. Weights & Biases interprets the queue configuration as additional arguments passed to the `docker run` command.
+
+## Configure a Docker queue
+
+A queue configuration for a Docker target resource defines how Launch translates queue options into a `docker run` command.
+
+The launch queue configuration (for a Docker target resource) accepts the same options defined in the [`docker run`](https://docs.coreweave.com/products/wandb/ref/cli/wandb-docker-run) CLI command.
+
+The agent receives options defined in the queue configuration. The agent then merges the received options with any overrides from the launch job's configuration to produce a final `docker run` command that runs on the target resource (in this case, a local machine).
+
+Two syntax transformations take place:
+
+* Define repeated options in the queue configuration as a list.
+* Define flag options in the queue configuration as a boolean with the value `true`.
+
+For example, the following queue configuration:
+
+```json theme={"system"}
+{
+  "env": ["MY_ENV_VAR=value", "MY_EXISTING_ENV_VAR"],
+  "volume": "/mnt/datasets:/mnt/datasets",
+  "rm": true,
+  "gpus": "all"
+}
+```
+
+Results in the following `docker run` command:
+
+```bash theme={"system"}
+docker run \
+  --env MY_ENV_VAR=value \
+  --env MY_EXISTING_ENV_VAR \
+  --volume "/mnt/datasets:/mnt/datasets" \
+  --rm [IMAGE-URI] \
+  --gpus all
+```
+
+Specify volumes either as a list of strings, or as a single string. Use a list if you specify multiple volumes.
+
+Docker passes environment variables that aren't assigned a value from the launch agent environment. If the launch agent has an environment variable `MY_EXISTING_ENV_VAR`, that variable is available in the container. This is useful if you want to use other config keys without publishing them in the queue configuration.
+
+The `--gpus` flag of the `docker run` command lets you specify GPUs that are available to a Docker container. For more information about the `--gpus` flag, see the [Docker documentation](https://docs.docker.com/config/containers/resource_constraints/#gpu).
+
+> [!NOTE]
+>
+> * Install the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker) to use GPUs within a Docker container.
+> * If you build images from a code or artifact-sourced job, you can override the base image used by the [agent](#configure-a-launch-agent-on-a-local-machine) to include the NVIDIA Container Toolkit.
+>   For example, within your launch queue, you can override the base image to `tensorflow/tensorflow:latest-gpu`:
+>
+>   ```json theme={"system"}
+>   {
+>     "builder": {
+>       "accelerator": {
+>         "base_image": "tensorflow/tensorflow:latest-gpu"
+>       }
+>     }
+>   }
+>   ```
+
+## Create a queue
+
+To create a queue that uses Docker as the compute resource, follow these steps:
+
+1. Navigate to the [Launch page](https://forge.coreweave.com/wandb/launch).
+2. Click the **Create Queue** button.
+3. Select the **Entity** you want to create the queue in.
+4. Enter a name for your queue in the **Name** field.
+5. Select **Docker** as the **Resource**.
+6. Define your Docker queue configuration in the **Configuration** field.
+7. Click the **Create Queue** button.
+
+You now have a Docker-based launch queue ready to receive jobs. Next, configure a launch agent on your local machine to pull jobs from this queue.
+
+## Configure a launch agent on a local machine
+
+Configure the launch agent with a YAML config file named `launch-config.yaml`. By default, Weights & Biases checks for the config file in `~/.config/wandb/launch-config.yaml`. You can optionally specify a different directory when you activate the launch agent.
+
+> [!NOTE]
+>
+> You can use the W\&B CLI to specify core configurable options for the launch agent (instead of the config YAML file): maximum number of jobs, Weights & Biases entity, and launch queues. See the [`wandb launch-agent`](https://docs.coreweave.com/products/wandb/ref/cli/wandb-launch-agent) command for more information.
+
+### Core agent config options
+
+The following tabs demonstrate how to specify the core config agent options with the W\&B CLI and with a YAML config file:
+
+> [tab] W\&B CLI
+>
+> ```bash theme={"system"}
+> wandb launch-agent -q [QUEUE-NAME] --max-jobs [N]
+> ```
+
+> [tab] Config file
+>
+> ```yaml title="launch-config.yaml" theme={"system"}
+> max_jobs: [N-CONCURRENT-JOBS]
+> queues:
+>   - [QUEUE-NAME]
+> ```
+
+### Docker image builders
+
+You can configure the launch agent on your machine to build Docker images. By default, your machine's local image repository stores these images. To enable your launch agent to build Docker images, set the `builder` key in the launch agent config to `docker`:
+
+```yaml title="launch-config.yaml" theme={"system"}
+builder:
+  type: docker
+```
+
+If you don't want the agent to build Docker images, and instead use prebuilt images from a registry, set the `builder` key in the launch agent config to `noop`:
+
+```yaml title="launch-config.yaml" theme={"system"}
+builder:
+  type: noop
+```
+
+### Container registries
+
+Launch uses external container registries such as Docker Hub, Google Container Registry, Azure Container Registry, and Amazon ECR. If you want to run a job on a different environment from where you built it, configure your agent to pull from a container registry, so the agent can retrieve images that weren't built locally.
+
+To learn more about how to connect the launch agent with a cloud registry, see the [Advanced agent setup](https://docs.coreweave.com/products/wandb/platform/launch/setup-agent-advanced.md#agent-configuration) page.

@@ -1,0 +1,73 @@
+# 'str' = '',
+
+Source: https://docs.coreweave.com/products/wandb/ref/python/custom-charts/scatter
+
+# scatter()
+
+[View source](https://github.com/wandb/wandb/blob/main/wandb/plot/scatter.py#L12)
+
+## function wandb.plot.scatter()
+
+Constructs a scatter plot from a wandb.Table of data.
+
+```python theme={"system"}
+table: 'wandb.Table',
+x: 'str',
+y: 'str',
+title: 'str' = '',
+split_table: 'bool' = False
+```
+
+## Args
+
+**table** `wandb.Table`
+
+The W\&B Table containing the data to visualize.
+
+**x** `str`
+
+The name of the column used for the x-axis.
+
+**y** `str`
+
+The name of the column used for the y-axis.
+
+**title** `str`
+
+The title of the scatter chart.
+
+**split\_table** `bool`
+
+Whether the table should be split into a separate section in the W\&B UI. If `True`, the table will be displayed in a section named "Custom Chart Tables". Default is `False`.
+
+## Returns
+
+`CustomChart`: A custom chart object that can be logged to W\&B. To log the chart, pass it to `wandb.log()`.
+
+## Examples
+
+```python theme={"system"}
+import math
+import random
+import wandb
+
+# Simulate temperature variations at different altitudes over time
+data = [
+    [i, random.uniform(-10, 20) - 0.005 * i + 5 * math.sin(i / 50)]
+    for i in range(300)
+]
+
+# Create W&B table with altitude (m) and temperature (°C) columns
+table = wandb.Table(data=data, columns=["altitude (m)", "temperature (°C)"])
+
+# Initialize W&B run and log the scatter plot
+with wandb.init(project="temperature-altitude-scatter") as run:
+    # Create and log the scatter plot
+    scatter_plot = wandb.plot.scatter(
+        table=table,
+        x="altitude (m)",
+        y="temperature (°C)",
+        title="Altitude vs Temperature",
+    )
+    run.log({"altitude-temperature-scatter": scatter_plot})
+```

@@ -1,0 +1,24 @@
+# wandb job list
+
+Source: https://docs.coreweave.com/products/wandb/ref/cli/wandb-job/wandb-job-list
+
+# wandb job list
+
+[View source](https://github.com/wandb/wandb/blob/v0.31.0/wandb/cli/cli.py#L2098)
+
+## Usage
+
+```bash theme={"system"}
+list [OPTIONS]
+```
+
+## Description
+
+List jobs in a project.
+
+## Options
+
+| Flag | Type | Description |
+| - | - | - |
+| `--project, -p` | STR | The project you want to list jobs from. **Default**: None |
+| `--entity, -e` | STR | The entity the jobs belong to. **Default**: models |

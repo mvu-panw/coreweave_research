@@ -1,0 +1,101 @@
+# Use federated identities with SDK
+
+Source: https://docs.coreweave.com/products/wandb/platform/hosting/iam/identity_federation
+
+# Use federated identities with SDK
+
+> Use identity federation with JSON Web Tokens (JWTs) to authenticate with the W&B SDK and CLI without API keys.
+
+Use identity federation to sign in to the W\&B SDK and CLI with your organizational credentials, instead of using a long-lived API key. If your organization admin has configured SSO for your organization, you already use those credentials to sign in to Forge. Identity federation is like SSO for the W\&B SDK, but uses JSON Web Tokens (JWTs) directly. Use identity federation as an alternative to API keys.
+
+This page is for organization admins who configure the JWT issuer for an organization. It's also for users or service accounts that authenticate to Weights & Biases using JWTs.
+
+[RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) forms the underlying basis for identity federation with SDK.
+
+> [!NOTE]
+>
+> Identity federation is available in preview for Multi-tenant Cloud, Dedicated Cloud, and Self-Managed. An [Enterprise license](https://docs.coreweave.com/products/wandb/platform/hosting/enterprise-licenses.md) is required. For details or assistance, contact your AISE or [support](mailto:forge-support@coreweave.com).
+
+> [!NOTE]
+>
+> This document uses the terms "identity provider" and "JWT issuer" interchangeably. Both refer to the same thing in the context of this capability.
+
+## Set up the JWT issuer
+
+Before users can authenticate with JWTs, an organization admin must set up a federation between your organization and a publicly accessible JWT issuer.
+
+1. Navigate to the **Settings** tab in your organization dashboard.
+2. In the **Authentication** option, click **Set up JWT Issuer**.
+3. Add the JWT issuer URL in the text box and click **Create**.
+
+Weights & Biases automatically looks for an OIDC discovery document at the path `${ISSUER_URL}/.well-known/openid-configuration`. From the discovery document, Weights & Biases locates the JSON Web Key Set (JWKS) at the relevant URL. Weights & Biases uses the JWKS for real-time validation of the JWTs to ensure that the relevant identity provider issued them.
+
+After this step, your organization is federated with the JWT issuer. Users in your organization can then authenticate to Weights & Biases using JWTs issued by that provider.
+
+## Use the JWT to access Weights & Biases
+
+After an organization admin sets up a JWT issuer, users can start accessing Weights & Biases projects using JWTs issued by that identity provider. The mechanism for using JWTs is as follows:
+
+1. You must sign in to the identity provider using one of the mechanisms available in your organization. You can access some providers in an automated manner using an API or SDK, while others are only accessible through a relevant UI. Contact your organization admin or the owner of the JWT issuer for details.
+2. After you've retrieved the JWT by signing in to your identity provider, store it in a file at a secure location. Configure the absolute file path in an environment variable `WANDB_IDENTITY_TOKEN_FILE`.
+3. Access your Weights & Biases project using the W\&B SDK or CLI. The SDK or CLI automatically detects the JWT and exchanges it for a Weights & Biases access token after validating the JWT. The Weights & Biases access token grants access to the relevant APIs for enabling your AI workflows, such as logging runs, metrics, and artifacts. By default, the access token is stored at the path `~/.config/wandb/credentials.json`. You can change that path by specifying the environment variable `WANDB_CREDENTIALS_FILE`.
+
+> [!NOTE]
+>
+> JWTs are short-lived credentials that address the shortcomings of long-lived credentials such as API keys and passwords. The JWT expiry time depends on your identity provider's configuration. Refresh the JWT before it expires, and ensure that it's stored in the file referenced by the environment variable `WANDB_IDENTITY_TOKEN_FILE`.
+>
+> The Weights & Biases access token also has a default expiry duration, after which the SDK or CLI tries to refresh it using your JWT. If the user JWT has also expired by that time and isn't refreshed, authentication fails. If possible, implement the JWT retrieval and post-expiry refresh mechanism as part of the AI workload that uses the W\&B SDK or CLI.
+
+### JWT validation
+
+To ensure that only valid tokens grant access, the JWT undergoes the following validations. These validations run when the SDK or CLI exchanges the JWT for a Weights & Biases access token and then accesses a project:
+
+* Weights & Biases verifies the JWT signature using the JWKS at the organization level. This is the first line of defense, and if this fails, that means there's a problem with your JWKS or how your JWT is signed.
+
+* The `iss` claim in the JWT must equal the issuer URL configured at the organization level.
+
+* The `sub` claim in the JWT must equal the user's email address as configured in the organization.
+
+* The `aud` claim in the JWT must equal the name of the organization that houses the project you're accessing as part of your AI workflow.
+
+  On [Dedicated Cloud](https://docs.coreweave.com/products/wandb/platform/hosting/hosting-options/dedicated-cloud.md) or [Self-Managed](https://docs.coreweave.com/products/wandb/platform/hosting/hosting-options/self-managed.md) instances:
+
+  * To skip audience validation, you can set the environment variable `FEDERATED_AUTH_AUDIENCES` to `wandb`.
+  * Some organizations have specific requirements for the audience. To customize the `aud` value, set the environment variable `FEDERATED_AUTH_AUDIENCES` to a string with a comma-separated list of audience values.
+
+* Weights & Biases checks the `exp` claim in the JWT to determine whether the token is valid or has expired and needs to be refreshed.
+
+## External service accounts
+
+Weights & Biases has long supported built-in service accounts with long-lived API keys. With identity federation for the SDK and CLI, you can also bring external service accounts that use JWTs for authentication. The organization's configured issuer must issue those JWTs. A team admin can configure external service accounts within the scope of a team, like the built-in service accounts.
+
+To configure an external service account, a team admin must:
+
+1. Navigate to the **Service Accounts** tab for your team.
+2. Click **New service account**.
+3. Provide a name for the service account.
+4. Select **Federated Identity** as the **Authentication Method**, then provide a **Subject**. See [Determine the Subject value for your identity provider](#determine-the-subject-value-for-your-identity-provider).
+5. Click **Create**.
+
+After this step, the external service account is registered with the team and can use JWTs issued by the configured identity provider to access Weights & Biases. The `sub` claim in the external service account's JWT must equal the subject configured by the team admin in the team-level **Service Accounts** tab. Weights & Biases verifies that claim as part of [JWT validation](#jwt-validation). The `aud` claim requirement is similar to that for human user JWTs.
+
+When [using an external service account's JWT to access Weights & Biases](#use-the-jwt-to-access-wb), it's often easier to automate the workflow. Automation generates the initial JWT and refreshes it as needed. To attribute runs logged using an external service account to a human user, configure the environment variables `WANDB_USERNAME` or `WANDB_USER_EMAIL` for your AI workflow, similar to built-in service accounts.
+
+> [!NOTE]
+>
+> Weights & Biases recommends using a mix of built-in and external service accounts across your AI workloads with different levels of data sensitivity. This mix strikes a balance between flexibility and simplicity.
+
+### Determine the Subject value for your identity provider
+
+The value you enter for **Subject** must exactly match the `sub` (subject) claim in JWTs issued by your IdP for the service account. Weights & Biases applies the same comparison for every identity provider. The match is exact, case-sensitive, and whitespace-sensitive, so even a trailing space or a difference in capitalization causes authentication to fail.
+
+The W\&B App accepts any non-empty **Subject** without validating its value, since the value is entirely dependent on the IdP. Weights & Biases can't detect an incorrect value when you create the service account. Instead, authentication fails later, when the service account presents its JWT.
+
+The most reliable way to determine the correct value is to read it from a real token. Obtain a sample JWT issued for the service account, base64url-decode its payload (the middle segment, between the two dots) locally, and copy the `sub` value verbatim into the **Subject** field. Don't paste JWTs into third-party online decoders, because a JWT is a credential.
+
+The value differs by provider. The following are typical, but always confirm them against an actual token:
+
+| Identity provider | Where to find the `sub` value |
+| - | - |
+| Microsoft Entra ID | The service principal's **Object ID**, found under **Enterprise Applications** in the [Microsoft Entra admin center](https://entra.microsoft.com). Use the **Enterprise Application** (service principal) Object ID, not the **App registration** Object ID. For app-only (client credentials) tokens, this is typically the value Entra ID places in `sub`. |
+| Google Cloud (GCP) | The `sub` value from the ID token that Google issues for the service account. |

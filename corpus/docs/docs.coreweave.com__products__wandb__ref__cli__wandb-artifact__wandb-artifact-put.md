@@ -1,0 +1,78 @@
+# wandb artifact put
+
+Source: https://docs.coreweave.com/products/wandb/ref/cli/wandb-artifact/wandb-artifact-put
+
+# wandb artifact put
+
+[View source](https://github.com/wandb/wandb/blob/v0.31.0/wandb/cli/cli.py#L2783)
+
+## Usage
+
+```bash theme={"system"}
+put [OPTIONS] PATH
+```
+
+## Description
+
+Upload an artifact to W\&B.
+
+Upload a file, directory, or URL reference as a versioned artifact.
+
+The PATH can be a local file, a local directory, or a URL
+(containing `://`) to log as a reference artifact.
+
+If `--name` is not specified, the artifact name defaults to the
+basename of the path. If the project cannot be parsed from the
+name, you are prompted to enter one.
+
+For example, to upload all files in a local directory ./data/training as a
+dataset artifact in W\&B:
+
+```bash theme={"system"}
+wandb artifact put --type dataset ./data/training
+```
+
+To upload model.pt to the "foobar" project and assign "trained-model" as
+the artifact name:
+
+```bash theme={"system"}
+wandb artifact put --name foobar/trained-model --type model ./model.pt
+```
+
+To tag the artifact with both "latest" and "v2.0" so it can be
+referenced by either alias:
+
+```bash theme={"system"}
+wandb artifact put --alias latest --alias v2.0 --type model ./model.pt
+```
+
+To record an Amazon S3 path as a reference without downloading or re-uploading the data:
+
+```bash theme={"system"}
+wandb artifact put --type dataset s3://my-bucket/datasets/training
+```
+
+To attach a human-readable description to a dataset artifact for documentation:
+
+```bash theme={"system"}
+wandb artifact put --type dataset --description "Training data, Jan 2025" ./data/training
+```
+
+## Arguments
+
+| Name | Default | Type |
+| - | - | - |
+| `path` | STR | True |
+
+## Options
+
+| Flag | Type | Description |
+| - | - | - |
+| `--name, -n` | STR | Artifact name in project/artifact\_name format. Defaults to the basename of the path. **Default**: None |
+| `--description, -d` | STR | A description of this artifact. **Default**: None |
+| `--type, -t` | STR | The type of the artifact. Defaults to 'dataset'. **Default**: dataset |
+| `--alias, -a` | STR | An alias to apply to this artifact. Can be specified multiple times. Defaults to 'latest'. **Default**: \['latest'] |
+| `--id` | STR | Upload to an existing run with this ID. **Default**: None |
+| `--resume` | BOOL Flag | Resume the last run from your current directory. **Default**: None |
+| `--skip_cache` | BOOL Flag | Skip caching while uploading artifact files. **Default**: False |
+| `--policy` | Choice | Set the storage policy for artifact files. Either 'mutable' (default) or 'immutable'. **Default**: mutable |

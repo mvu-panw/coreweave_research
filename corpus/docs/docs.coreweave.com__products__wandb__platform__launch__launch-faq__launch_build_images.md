@@ -1,0 +1,27 @@
+# How W&B Launch builds images
+
+Source: https://docs.coreweave.com/products/wandb/platform/launch/launch-faq/launch_build_images
+
+# How W&B Launch builds images
+
+This page explains how W\&B Launch builds container images for your jobs, so you can predict which build actions Launch performs and configure your queue or job accordingly.
+
+The steps for building an image depend on the job source and the specified accelerator base image in the resource configuration.
+
+> [!NOTE]
+>
+> When configuring a queue or submitting a job, include a base accelerator image in the queue or job resource configuration:
+>
+> ```json theme={"system"}
+> {
+>     "builder": {
+>         "accelerator": {
+>             "base_image": "[IMAGE-NAME]"
+>         }
+>     }
+> }
+> ```
+
+The build process includes the following actions based on the job type and provided accelerator base image:
+
+\| | Install Python using apt | Install Python packages | Create a user and workdir | Copy code into image | Set entrypoint | |

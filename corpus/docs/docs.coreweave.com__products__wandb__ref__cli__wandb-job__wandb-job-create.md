@@ -1,0 +1,47 @@
+# wandb job create
+
+Source: https://docs.coreweave.com/products/wandb/ref/cli/wandb-job/wandb-job-create
+
+# wandb job create
+
+[View source](https://github.com/wandb/wandb/blob/v0.31.0/wandb/cli/cli.py#L2159)
+
+## Usage
+
+```bash theme={"system"}
+create [OPTIONS] {git|code|image} PATH
+```
+
+## Description
+
+Create a job from a source, without a wandb run.
+
+Jobs can be of three types, git, code, or image.
+
+git: A git source, with an entrypoint either in the path or provided
+explicitly pointing to the main python executable.
+code: A code path, containing a requirements.txt file.
+image: A docker image.
+
+## Arguments
+
+| Name | Default | Type |
+| - | - | - |
+| `job_type` | Choice | True |
+| `path` | STR | True |
+
+## Options
+
+| Flag | Type | Description |
+| - | - | - |
+| `--project, -p` | STR | The project you want to list jobs from. **Default**: None |
+| `--entity, -e` | STR | The entity the jobs belong to. **Default**: None |
+| `--name, -n` | STR | Name for the job. **Default**: None |
+| `--description, -d` | STR | Description for the job. **Default**: None |
+| `--alias, -a` | STR | Alias for the job. **Default**: \[] |
+| `--entry-point, -E` | STR | Entrypoint to the script, including an executable and an entrypoint file. Required for code or repo jobs. If --build-context is provided, paths in the entrypoint command will be relative to the build context. **Default**: None |
+| `--git-hash, -g` | STR | Commit reference to use as the source for git jobs. **Default**: None |
+| `--runtime, -r` | STR | Python runtime to execute the job. **Default**: None |
+| `--build-context, -b` | STR | Path to the build context from the root of the job source code. If provided, this is used as the base path for the Dockerfile and entrypoint. **Default**: None |
+| `--base-image, -B` | STR | Base image to use for the job. Incompatible with image jobs. **Default**: None |
+| `--dockerfile, -D` | STR | Path to the Dockerfile for the job. If --build-context is provided, the Dockerfile path will be relative to the build context. **Default**: None |

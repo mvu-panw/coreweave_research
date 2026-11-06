@@ -1,0 +1,113 @@
+# Hydra
+
+Source: https://docs.coreweave.com/products/wandb/integrations/hydra
+
+> Use Weights & Biases with Hydra to manage ML experiment configurations and log hyperparameters automatically.
+
+# Hydra
+
+> [Hydra](https://hydra.cc) is an open source Python framework that simplifies the development of research and other complex applications. The key feature is the ability to dynamically create a hierarchical configuration by composition and override it through config files and the command line.
+
+This page shows how to combine Hydra-based configuration management with Weights & Biases experiment tracking, so you can keep Hydra's composable configs while gaining Weights & Biases' visualization, hyperparameter optimization, and run comparison capabilities. The following sections cover tracking metrics, logging hyperparameters from Hydra configs, troubleshooting multiprocessing, and optimizing hyperparameters with W\&B Sweeps.
+
+## Track metrics
+
+To send metrics from a Hydra-configured run to Weights & Biases, use `wandb.init()` and `wandb.Run.log()` as you normally would. In the following example, `wandb.entity` and `wandb.project` are defined within a Hydra configuration file so that the same config drives both Hydra and Weights & Biases.
+
+```python theme={"system"}
+import wandb
+
+
+@hydra.main(config_path="configs/", config_name="defaults")
+def run_experiment(cfg):
+
+    with wandb.init(entity=cfg.wandb.entity, project=cfg.wandb.project) as run:
+      run.log({"loss": loss})
+```
+
+## Track hyperparameters
+
+Logging Hydra's configuration to Weights & Biases lets you see every hyperparameter alongside the run's metrics, making experiments easier to compare and reproduce.
+
+Hydra uses [OmegaConf](https://omegaconf.readthedocs.io/en/2.1_branch/) as the default interface to handle configuration dictionaries. OmegaConf config objects (for example, `omegaconf.DictConfig`) are not plain Python `dict` instances.
+
+`wandb.Run.config` is a read-only property, which means that `wandb.Run.config = ...` raises an `AttributeError` if you try to pass an OmegaConf config object.
+
+Convert `cfg` to a plain `dict` with `OmegaConf.to_container()` and pass it to `wandb.init(config=...)` (or call `wandb.Run.config.update(...)`).
+
+```python theme={"system"}
+import hydra
+import omegaconf
+import wandb
+
+
+@hydra.main(version_base=None, config_path="configs/", config_name="defaults")
+def run_experiment(cfg):
+    cfg_dict = omegaconf.OmegaConf.to_container(
+        cfg, resolve=True, throw_on_missing=True
+    )
+    # Optional: avoid logging W&B metadata (like entity/project) as part of the run config
+    cfg_dict.pop("wandb", None)
+    with wandb.init(
+        entity=cfg.wandb.entity,
+        project=cfg.wandb.project,
+        config=cfg_dict,
+    ) as run:
+        run.log({"loss": loss})
+        model = Model(**run.config["model"]["configs"])
+```
+
+## Troubleshoot multiprocessing
+
+If your process stops responding when started, the [known multiprocessing issue in distributed training](https://docs.coreweave.com/products/wandb/track/log/distributed-training.md) might be the cause. To resolve it, change Weights & Biases' multiprocessing protocol by either adding an extra settings parameter to `wandb.init()`:
+
+```python theme={"system"}
+wandb.init(settings=wandb.Settings(start_method="thread"))
+```
+
+or by setting a global environment variable from your shell:
+
+```bash theme={"system"}
+export WANDB_START_METHOD=thread
+```
+
+## Optimize hyperparameters
+
+[W\&B Sweeps](https://docs.coreweave.com/products/wandb/sweeps.md) is a hyperparameter search platform that provides insights and visualizations for Weights & Biases experiments with minimal code overhead. Sweeps integrates with Hydra projects without requiring code changes. You only need a configuration file that describes the parameters to sweep over.
+
+The following `sweep.yaml` file is an example:
+
+```yaml theme={"system"}
+program: main.py
+method: bayes
+metric:
+  goal: maximize
+  name: test/accuracy
+parameters:
+  dataset:
+    values: [mnist, cifar10]
+
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}
+```
+
+Invoke the sweep:
+
+```bash theme={"system"}
+wandb sweep sweep.yaml
+```
+
+Weights & Biases automatically creates a sweep inside your project and returns a `wandb agent` command. Run that command on each machine on which you want to execute the sweep.
+
+### Pass parameters not present in Hydra defaults
+
+Hydra supports passing extra parameters through the command line that aren't present in the default configuration file, by using a `+` before the command. For example, pass an extra parameter with some value by calling:
+
+```bash theme={"system"}
+python program.py +experiment=some_experiment
+```
+
+You can't sweep over such `+` configurations the same way you would when configuring [Hydra Experiments](https://hydra.cc/docs/patterns/configuring_experiments/). To work around this, initialize the experiment parameter with a default empty file and use a W\&B Sweep to override those empty configs on each call. For more information, read the W\&B report [Configuring Weights & Biases Projects with Hydra](https://forge.coreweave.com/wandb/adrishd/hydra-example/reports/Configuring-W-B-Projects-with-Hydra--VmlldzoxNTA2MzQw?galleryTag=posts\&utm_source=fully_connected\&utm_medium=blog\&utm_campaign=hydra).

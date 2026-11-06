@@ -1,0 +1,136 @@
+# Public API overview
+
+Source: https://docs.coreweave.com/products/wandb/ref/python/public-api
+
+# Public API overview
+
+> Use the W&B Public API to programmatically access and manage W&B data
+
+The W\&B Public API provides programmatic access to query, export, and update data stored in W\&B. Use this API for post-hoc analysis, data export, and programmatic management of runs, artifacts, and sweeps. While the main SDK handles real-time logging during training, the Public API enables you to retrieve historical data, update metadata, manage artifacts, and perform analysis on completed experiments. The main `Api` class serves as the entry point to most functionality.
+
+> To train and fine-tune models, use [the W\&B Python SDK](https://docs.coreweave.com/products/wandb/ref/python.md). Use the Public API to query and manage data *after* you log it to W\&B.
+
+## Available components
+
+| Component | Description |
+| - | - |
+| [`Api`](https://docs.coreweave.com/products/wandb/ref/python/public-api/api) | Main entry point for the Public API. Query runs, projects, and artifacts across your organization. |
+| [`Runs`](https://docs.coreweave.com/products/wandb/ref/python/public-api/runs) | Access and manage individual training runs, including history, logs, and metrics. |
+| [`Artifacts`](https://docs.coreweave.com/products/wandb/artifacts) | Query and download model artifacts, datasets, and other versioned files. |
+| [`Sweeps`](https://docs.coreweave.com/products/wandb/sweeps) | Access hyperparameter sweep data and analyze optimization results. |
+| [`Projects`](https://docs.coreweave.com/products/wandb/ref/python/public-api/projects) | Manage projects and access project-level metadata and settings. |
+| [`Reports`](https://docs.coreweave.com/products/wandb/reports/create-a-report) | Programmatically access and manage W\&B Reports. |
+| [`Team`](https://docs.coreweave.com/products/wandb/ref/python/public-api/team) | Query team information and manage team-level resources. |
+| [`User`](https://docs.coreweave.com/products/wandb/ref/python/public-api/user) | Access user profiles and user-specific data. |
+| [`Files`](https://docs.coreweave.com/products/wandb/ref/python/public-api/files) | Download and manage files associated with runs. |
+| `History` | Access detailed time-series metrics logged during training (see Run.history). |
+| [`Automations`](https://docs.coreweave.com/products/wandb/ref/python/automations) | Manage automated workflows and actions. |
+| [`Integrations`](https://docs.coreweave.com/products/wandb/integrations) | Configure and manage third-party integrations. |
+
+## Common use cases
+
+### Data export and analysis
+
+* Export run history as DataFrames for analysis in Jupyter notebooks
+* Download metrics for custom visualization or reporting
+* Aggregate results across multiple experiments
+
+### Post-Hoc Updates
+
+* Update run metadata after completion
+* Add tags or notes to completed experiments
+* Modify run configurations or summaries
+
+### Artifact Management
+
+* Query artifacts by version or alias
+* Download model checkpoints programmatically
+* Track artifact lineage and dependencies
+
+### Sweep Analysis
+
+* Access sweep results and best performing runs
+* Export hyperparameter search results
+* Analyze parameter importance
+
+## Authentication
+
+The Public API uses the same authentication mechanism as the Python SDK. You can authenticate in several ways:
+
+Use the `WANDB_API_KEY` environment variable to set your API key:
+
+```bash theme={"system"}
+export WANDB_API_KEY=your_api_key
+```
+
+Pass the API key directly when initializing the `Api` class:
+
+```python theme={"system"}
+api = Api(api_key="your_api_key")
+```
+
+Or use `wandb.login()` to authenticate the current session:
+
+```python theme={"system"}
+import wandb
+
+wandb.login()
+api = Api()
+```
+
+## Example usage
+
+### Download an Artifact by name and alias
+
+The following example shows how to retrieve an artifact logged to W\&B by its name and alias, and then download its contents.
+
+```python theme={"system"}
+import wandb
+
+api = wandb.Api()
+artifact = api.artifact("entity/project/artifact:alias")
+artifact.download()
+```
+
+### Download an Artifact from a registry
+
+The following example shows how to retrieve a linked artifact from a Registry:
+
+```python theme={"system"}
+import wandb
+
+REGISTRY = "<registry_name>"
+COLLECTION = "<collection_name>"
+VERSION = "<version>"
+
+api = wandb.Api()
+artifact_name = f"wandb-registry-{REGISTRY}/{COLLECTION}:{VERSION}"
+
+# Fetch the artifact
+fetched_artifact = api.artifact(name = artifact_name)
+
+# Download artifact. Returns path to downloaded contents
+downloaded_path = fetched_artifact.download()
+```
+
+### Query Registry
+
+Use Mongo-like filters to query Registries, Collections, and Artifacts. The following example demonstrates how to filter collections by name using a regular expression.
+
+```python theme={"system"}
+import wandb
+
+# Initialize wandb API
+api = wandb.Api()
+
+# Filter all collections, independent of registry, that 
+# contains the string `yolo` in the collection name
+collection_filters = {
+    "name": {"$regex": "yolo"}
+}
+
+# Returns an iterable of all collections that match the filters
+collections = api.registries().collections(filter=collection_filters)
+```
+
+For more information on how to query a registry, collection, or artifact, see the [Find registry items](https://docs.coreweave.com/products/registry/search_registry.md).

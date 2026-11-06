@@ -1,0 +1,29 @@
+# Advanced IAM configuration
+
+Source: https://docs.coreweave.com/products/wandb/platform/hosting/iam/advanced_env_vars
+
+# Advanced IAM configuration
+
+> Configure advanced Weights & Biases IAM settings with environment variables for SSO, session length, OIDC, and LDAP.
+
+In addition to basic [environment variables](https://docs.coreweave.com/products/wandb/platform/hosting/env-vars.md), you can use environment variables to configure advanced IAM options for your [Dedicated Cloud](https://docs.coreweave.com/products/wandb/platform/hosting/hosting-options/dedicated-cloud.md) or [Self-Managed](https://docs.coreweave.com/products/wandb/platform/hosting/hosting-options/self-managed.md) instance. Use these variables to customize SSO behavior, session expiration, OIDC and LDAP integration, and other identity-related settings to match your organization's security and access requirements.
+
+Choose any of the following environment variables for your instance depending on your IAM needs.
+
+| Environment variable | Description |
+| - | - |
+| `DISABLE_SSO_PROVISIONING` | Set this to `true` to turn off user auto-provisioning in your Weights & Biases instance. |
+| `SESSION_LENGTH` | To change the default user session expiry time, set this variable to the desired number of hours. For example, set `SESSION_LENGTH` to `24` to configure session expiry time to 24 hours. The default value is 720 hours. |
+| `GORILLA_ENABLE_SSO_GROUPS_CLAIMS` | When you use OIDC-based SSO, set this variable to `true` to automate Weights & Biases team membership in your instance based on your OIDC groups. You must also add a `groups` claim to the user OIDC token, formatted as a string array of all team names the user is part of. |
+| `GORILLA_LDAP_GROUP_SYNC` | If you use LDAP-based SSO, set it to `true` to automate Weights & Biases team membership in your instance based on your LDAP groups. |
+| `GORILLA_OIDC_CUSTOM_SCOPES` | If you use OIDC-based SSO, you can specify additional [scopes](https://auth0.com/docs/get-started/apis/scopes/openid-connect-scopes) that the Weights & Biases instance requests from your identity provider. These custom scopes don't change the SSO functionality. |
+| `GORILLA_OIDC_SECRET` | If you use OIDC-based SSO and your IdP requires an OIDC Client Secret, set this variable to the secret. |
+| `GORILLA_USE_IDENTIFIER_CLAIMS` | If you use OIDC-based SSO, set this variable to `true` to enforce the username and full name of your users using specific OIDC claims from your identity provider. If set, ensure that you configure the enforced username and full name in the `preferred_username` and `name` OIDC claims respectively. Usernames can only contain alphanumeric characters along with underscores and hyphens as special characters. |
+| `GORILLA_DISABLE_PERSONAL_ENTITY` | When set to `true`, turns off [personal entities](https://docs.coreweave.com/support/models/articles/what-is-the-difference-between-team-and-). Prevents creation of new personal projects in their personal entities and prevents writing to existing personal projects. |
+| `GORILLA_DISABLE_ADMIN_TEAM_ACCESS` | Set this to `true` to restrict Organization or Instance Admins from self-joining or adding themselves to a Weights & Biases team, ensuring that only Data and AI personas have access to the projects within the teams. |
+| `GORILLA_DISABLE_TEAM_SERVICE_ACCOUNT_CREATION` | Set this to `true` to prevent the creation of new [team-scoped service accounts](https://docs.coreweave.com/products/wandb/platform/hosting/iam/service-accounts.md#team-scoped-service-accounts). Available in Dedicated Cloud and Self-Managed v0.83.0+. To prevent members from creating new API keys, see [Disable API key creation](https://docs.coreweave.com/products/wandb/platform/hosting/iam/api-keys.md#disable-api-key-creation), which is an organization setting rather than an environment variable. |
+| `WANDB_IDENTITY_TOKEN_FILE` | For [identity federation](https://docs.coreweave.com/products/wandb/platform/hosting/iam/identity_federation.md), the absolute path to the local directory where JSON Web Tokens (JWTs) are stored. |
+
+> [!WARNING]
+>
+> Weights & Biases advises caution and understanding all implications before you enable some of these settings, such as `GORILLA_DISABLE_ADMIN_TEAM_ACCESS`. Contact your Weights & Biases team with any questions.

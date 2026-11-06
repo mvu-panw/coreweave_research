@@ -1,0 +1,86 @@
+# Update an artifact
+
+Source: https://docs.coreweave.com/products/wandb/artifacts/update-an-artifact
+
+> Update an existing artifact while a run is active or using only the Public API.
+
+# Update an artifact
+
+Pass desired values to update the `description`, `metadata`, and `alias` of an artifact. Update a run previously logged to Weights & Biases with the W\&B Public API with ([`wandb.Api`](https://docs.coreweave.com/products/wandb/ref/python/public-api/api)). Use `wandb.Run.save()` to update an artifact when is first initialized and still active.
+
+> [!NOTE]
+>
+> **When to use wandb.Artifact.save() or wandb.Run.log\_artifact()**
+>
+> * Use `Artifact.save()` to update an existing artifact without starting a new run.
+> * Use `wandb.Run.log_artifact()` to create a new artifact and associate it with a specific run.
+
+Use the W\&B Public API ([`wandb.Api`](https://docs.coreweave.com/products/wandb/ref/python/public-api/api)) to update an artifact. Use the wandb.Artifact ([`wandb.Artifact`](https://docs.coreweave.com/products/wandb/ref/python/experiments/artifact)) Class while a run is active.
+
+> [!WARNING]
+>
+> You can not update the alias of artifact linked to a model in Model Registry.
+
+> [tab] During a run
+>
+> The following code example demonstrates how to update the description of an artifact using the [`wandb.Artifact`](https://docs.coreweave.com/products/wandb/ref/python/experiments/artifact) API:
+>
+> ```python theme={"system"}
+> import wandb
+>
+> with wandb.init(project="<example>") as run:
+>     artifact = run.use_artifact("<artifact-name>:<alias>")
+>     artifact.description = "<description>"
+>     artifact.save()
+> ```
+
+> [tab] W\&B Public API
+>
+> The following example updates an artifact with [`wandb.Api`](https://docs.coreweave.com/products/wandb/ref/python/public-api/api):
+>
+> ```python theme={"system"}
+> import wandb
+>
+> api = wandb.Api()
+>
+> artifact = api.artifact("entity/project/artifact:alias")
+>
+> # Update the description
+> artifact.description = "My new description"
+>
+> # Selectively update metadata keys
+> artifact.metadata["oldKey"] = "new value"
+>
+> # Replace the metadata entirely
+> artifact.metadata = {"newKey": "new value"}
+>
+> # Add an alias
+> artifact.aliases.append("best")
+>
+> # Remove an alias
+> artifact.aliases.remove("latest")
+>
+> # Completely replace the aliases
+> artifact.aliases = ["replaced"]
+>
+> # Persist all artifact modifications
+> artifact.save()
+> ```
+>
+> For more information, see the Weights & Biases [Artifact API](https://docs.coreweave.com/products/wandb/ref/python/experiments/artifact.md).
+
+> [tab] With collections
+>
+> You can also update an Artifact collection in the same way as a singular artifact:
+>
+> ```python theme={"system"}
+> import wandb
+> with wandb.init(project="<example>") as run:
+>     api = wandb.Api()
+>     artifact = api.artifact_collection(type="<type-name>", collection="<collection-name>")
+>     artifact.name = "<new-collection-name>"
+>     artifact.description = "<This is where you'd describe the purpose of your collection.>"
+>     artifact.save()
+> ```
+>
+> For more information, see the [Artifacts Collection](https://docs.coreweave.com/products/wandb/ref/python/public-api/api.md) reference.

@@ -1,0 +1,71 @@
+# Parameter importance
+
+Source: https://docs.coreweave.com/products/wandb/app/features/panels/parameter-importance
+
+> Visualize the relationships between your model's hyperparameters and output metrics
+
+# Parameter importance
+
+The parameter importance panel helps you discover which of your hyperparameters are the best predictors of, and highly correlated to, desirable values of your metrics. Use this panel to focus future hyperparameter searches on the parameters that matter most for model performance.
+
+![Parameter importance panel](https://mintcdn.com/coreweave-dbfa0e8d/3Dv_sw2eg8feUJlx/products/wandb/_media/parameter-importance-1.png?fit=max\&auto=format\&n=3Dv_sw2eg8feUJlx\&q=85\&s=5804f0dec22b8b49001563c544a51066)
+
+**Correlation** is the linear correlation between the hyperparameter and the chosen metric (in this case, `val_loss`). A high correlation means that when the hyperparameter has a higher value, the metric also has higher values, and vice versa. Correlation is a useful metric, but it can't capture second-order interactions between inputs, and it can get messy when you compare inputs with different ranges.
+
+Weights & Biases also calculates an **importance** metric. Weights & Biases trains a random forest with the hyperparameters as inputs and the metric as the target output, then reports the feature importance values for the random forest.
+
+A conversation with [Jeremy Howard](https://twitter.com/jeremyphoward) inspired this technique. Jeremy pioneered the use of random forest feature importances to explore hyperparameter spaces at [Fast.ai](https://fast.ai). For more information about the motivation behind this analysis, see the [Fast.ai lesson 4 lecture](https://course18.fast.ai/lessonsml1/lesson4.html) and the [Fast.ai lesson 4 forum notes](https://forums.fast.ai/t/wiki-lesson-thread-lesson-4/7540).
+
+The hyperparameter importance panel untangles the complicated interactions between highly correlated hyperparameters. In doing so, it helps you fine-tune your hyperparameter searches by showing you which of your hyperparameters matter the most for predicting model performance.
+
+## Create a hyperparameter importance panel
+
+To add a hyperparameter importance panel to your workspace:
+
+1. Navigate to your Weights & Biases project.
+2. Select the **Add panels** button.
+3. Expand the **CHARTS** dropdown, then choose **Parallel coordinates** from the dropdown.
+
+> [!NOTE]
+>
+> If an empty panel appears, make sure that your runs are ungrouped.
+
+![Automatic parameter visualization](https://mintcdn.com/coreweave-dbfa0e8d/3Dv_sw2eg8feUJlx/products/wandb/_media/hyperparameter_importance_panel.gif?s=d68d7cb450cf99ea0e922fc61bd95099)
+
+With the parameter manager, you can manually set the visible and hidden parameters.
+
+![Manually setting the visible and hidden fields](https://mintcdn.com/coreweave-dbfa0e8d/3Dv_sw2eg8feUJlx/products/wandb/_media/hyperparameter_importance_panel_manual.gif?s=948ea3904de1360d239b15333d95d398)
+
+## Interpret a hyperparameter importance panel
+
+The following sections describe how to read the importance and correlation values shown in the panel so you can act on them in your next sweep.
+
+![Feature importance analysis](https://mintcdn.com/coreweave-dbfa0e8d/3Dv_sw2eg8feUJlx/products/wandb/_media/parameter-importance-4.png?fit=max\&auto=format\&n=3Dv_sw2eg8feUJlx\&q=85\&s=4dd512ea484bd004e4f0c5d649843450)
+
+This panel shows you all the parameters passed to the [`wandb.Run.config`](https://docs.coreweave.com/products/wandb/track/config) object in your training script. It also shows the feature importances and correlations of these config parameters with respect to the model metric you select (`val_loss` in this case).
+
+### Importance
+
+The importance column shows you the degree to which each hyperparameter was useful in predicting the chosen metric. Imagine a scenario where you start tuning many hyperparameters and use this plot to focus on which ones merit further exploration. You can then limit subsequent sweeps to the most important hyperparameters, which helps you find a better model faster and at lower cost.
+
+> [!NOTE]
+>
+> Weights & Biases calculates importances using a tree-based model rather than a linear model, because tree-based models are more tolerant of both categorical data and data that isn't normalized.
+
+In the preceding image, you can see that `epochs`, `learning_rate`, `batch_size`, and `weight_decay` were important.
+
+### Correlations
+
+Correlations capture linear relationships between individual hyperparameters and metric values. They answer the question of whether a relationship exists between using a hyperparameter, such as the SGD optimizer, and the `val_loss` (in this case, the answer is yes). Correlation values range from -1 to 1, where positive values represent positive linear correlation, negative values represent negative linear correlation, and a value of 0 represents no correlation. Generally, a value greater than 0.7 in either direction represents strong correlation.
+
+You might use this graph to further explore the values that have a higher correlation to your metric (in this case you might pick stochastic gradient descent or `adam` over `rmsprop` or `nadam`) or train for more epochs.
+
+> [!NOTE]
+>
+> * Correlations show evidence of association, not necessarily causation.
+> * Correlations are sensitive to outliers, which might turn a strong relationship into a moderate one, especially when the sample size of hyperparameters tried is small.
+> * Correlations only capture linear relationships between hyperparameters and metrics. Correlations don't capture strong polynomial relationships.
+
+The disparities between importance and correlations result because importance accounts for interactions between hyperparameters, whereas correlation only measures the effects of individual hyperparameters on metric values. Correlations also capture only linear relationships, whereas importances can capture more complex ones.
+
+Together, importance and correlations help you understand how your hyperparameters influence model performance.

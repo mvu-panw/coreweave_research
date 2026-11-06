@@ -1,0 +1,106 @@
+# TensorFlow
+
+Source: https://docs.coreweave.com/products/wandb/integrations/tensorflow
+
+# TensorFlow
+
+> Use Weights & Biases with TensorFlow for custom metrics, estimator hooks, and TensorBoard log synchronization.
+
+[Try in Colab](https://colab.research.google.com/drive/1JCpAbjkCFhYMT7LCQ399y35TS3jlMpvM)
+
+This page shows how to integrate Weights & Biases with TensorFlow to track experiments, log metrics, and synchronize TensorBoard logs. Follow these patterns to capture training data from TensorFlow models, customize what you log through estimator hooks or manual logging, and reuse your existing TensorBoard workflows with Weights & Biases' centralized dashboard. Use this integration when you want richer experiment tracking than TensorBoard alone provides.
+
+## Get started
+
+If you already use TensorBoard, you can integrate with Weights & Biases. Import both libraries to make the Weights & Biases and TensorFlow APIs available in your script.
+
+```python theme={"system"}
+import tensorflow as tf
+import wandb
+```
+
+## Log custom metrics
+
+This section covers how to log metrics that TensorBoard doesn't already capture, so you can track additional values alongside your standard TensorBoard summaries.
+
+If you need to log additional custom metrics that TensorBoard doesn't log, you can call `run.log()` in your code, for example `run.log({"custom": 0.8})`.
+
+Weights & Biases turns off the step argument in `run.log()` when syncing TensorBoard. To set a different step count, log the metrics with a step metric as:
+
+```python theme={"system"}
+with wandb.init(config=tf.flags.FLAGS, sync_tensorboard=True) as run:
+    run.log({"custom": 0.8, "global_step":global_step}, step=global_step)
+```
+
+## TensorFlow estimators hook
+
+This section describes the Weights & Biases hook for TensorFlow estimators, which gives you fine-grained control over what Weights & Biases captures during estimator training.
+
+If you want more control over what gets logged, Weights & Biases also provides a hook for TensorFlow estimators. It logs all `tf.summary` values in the graph.
+
+```python theme={"system"}
+import tensorflow as tf
+import wandb
+
+run = wandb.init(config=tf.FLAGS)
+
+estimator.train(hooks=[wandb.tensorflow.WandbHook(steps_per_log=1000)])
+run.finish()
+```
+
+## Log manually
+
+If you're not using estimators or want to log specific summaries explicitly, this section shows how to send `tf.summary` values to Weights & Biases directly.
+
+One way to log metrics in TensorFlow is to log `tf.summary` with the TensorFlow logger:
+
+```python theme={"system"}
+import wandb
+run = wandb.init(config=tf.flags.FLAGS, sync_tensorboard=True)
+with tf.Session() as sess:
+    # ...
+    wandb.tensorflow.log(tf.summary.merge_all())
+```
+
+With TensorFlow 2, the recommended way to train a model with a custom loop is to use `tf.GradientTape`. For more information, see the [TensorFlow custom training walkthrough](https://www.tensorflow.org/tutorials/customization/custom_training_walkthrough). To incorporate Weights & Biases to log metrics in your custom TensorFlow training loops, follow this snippet:
+
+```python theme={"system"}
+    with tf.GradientTape() as tape:
+        # Get the probabilities
+        predictions = model(features)
+        # Calculate the loss
+        loss = loss_func(labels, predictions)
+
+    # Log your metrics
+    run.log({"loss": loss.numpy()})
+    # Get the gradients
+    gradients = tape.gradient(loss, model.trainable_variables)
+    # Update the weights
+    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+```
+
+A [full example of customizing training loops in TensorFlow 2](https://www.wandb.com/articles/wandb-customizing-training-loops-in-tensorflow-2) is available.
+
+## Differences between Weights & Biases and TensorBoard
+
+If you're evaluating whether to adopt Weights & Biases alongside or in place of TensorBoard, this section highlights the key differences.
+
+Weights & Biases was built to address common limitations TensorBoard users encountered. Here are areas where Weights & Biases differs:
+
+* **Reproduce models**: Weights & Biases supports experimentation, exploration, and reproducing models later. Weights & Biases captures metrics, hyperparameters, and the code version, and can save your version-control status and model checkpoints so your project is reproducible.
+* **Automatic organization**: When you're picking up a project from a collaborator, returning after time away, or revisiting an old project, Weights & Biases lets you see the models you've tried so you don't re-run experiments unnecessarily.
+* **Flexible integration**: Add Weights & Biases to your project by installing the open-source Python package and adding a few lines to your code. Each run produces logged metrics and records.
+* **Persistent, centralized dashboard**: Whether you train your models on your local machine, a shared lab cluster, or spot instances in the cloud, Weights & Biases sends your results to the same centralized dashboard. You don't need to copy and organize TensorBoard files from different machines.
+* **Tables**: Search, filter, sort, and group results from different models. You can review model versions and find the best-performing models for different tasks.
+* **Tools for collaboration**: Use Weights & Biases to organize machine learning projects. Share a link to Weights & Biases, or use private teams to send results to a shared project. Reports support collaboration through interactive visualizations and Markdown descriptions, which you can use to keep a work log, share findings with your supervisor, or present findings to your lab or team.
+
+To try Weights & Biases, [create a free account](https://id.coreweave.com/signup).
+
+## Examples
+
+To see these integration patterns applied to complete projects, explore the following examples:
+
+* [MNIST example using TensorFlow Estimators](https://github.com/wandb/examples/blob/master/examples/tensorflow/tf-estimator-mnist/mnist.py).
+* [Fashion MNIST example using raw TensorFlow](https://github.com/wandb/examples/blob/master/examples/tensorflow/tf-cnn-fashion/train.py).
+* [Weights & Biases dashboard for the MNIST example](https://forge.coreweave.com/wandb/l2k2/examples-tf-estimator-mnist/runs/p0ifowcb).
+* Customizing training loops in TensorFlow 2: [article](https://www.wandb.com/articles/wandb-customizing-training-loops-in-tensorflow-2) and [dashboard](https://app.wandb.ai/sayakpaul/custom_training_loops_tf).

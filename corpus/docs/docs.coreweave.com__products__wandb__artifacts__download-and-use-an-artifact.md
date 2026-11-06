@@ -1,0 +1,148 @@
+# Download and use artifacts
+
+Source: https://docs.coreweave.com/products/wandb/artifacts/download-and-use-an-artifact
+
+> Download and use Artifacts from multiple projects.
+
+# Download and use artifacts
+
+Download and use an artifact that is already stored on the W\&B server or construct an artifact object and pass it in for de-duplication as necessary.
+
+## Download and use an artifact stored on Weights & Biases
+
+Download an artifact as a tracked run input when it is a run dependency, or fetch it directly for workflows that don’t require lineage tracking.
+
+> [!NOTE]
+>
+> References that have schemes that Weights & Biases knows how to handle get downloaded just like artifact files. For more information, see [Track external files](https://docs.coreweave.com/products/wandb/artifacts/track-external-files.md).
+
+You can download all files in an artifact or download individual files:
+
+* Use [`Artifact.download()`](https://docs.coreweave.com/products/wandb/ref/python/experiments/artifact#download) to download all files.
+* Use [`Artifact.get_entry()`](https://docs.coreweave.com/products/wandb/ref/python/experiments/artifact#get_entry) to retrieve a specific entry, and then call `.download()` to download it.
+
+> [tab] Track run input
+>
+> Use `wandb.Run.use_artifact()` to download an artifact as part of a W\&B run. Weights & Biases records the artifact as an input to the run.
+>
+> 1. Import the W\&B Python SDK and initialize a W\&B [Run](https://docs.coreweave.com/products/wandb/ref/python/experiments/run.md).
+> 2. Retrieve the artifact version with `wandb.Run.use_artifact()`.
+> 3. Download all files or a specific file from the returned `Artifact` object.
+>
+> ```python theme={"system"}
+> import wandb    
+>
+> with wandb.init(project="project-name", job_type="job-type") as run:
+>     # Indicate the artifact to use. Format is "name:alias"
+>     artifact = run.use_artifact("bike-dataset:latest")
+>
+>     # Download the entire artifact
+>     datadir = artifact.download()
+>
+>     # Download a specific file
+>     entry = artifact.get_entry("bike.png")
+>     file_path = entry.download() # downloads only bike.png
+> ```
+
+> [tab] Fetch directly
+>
+> Use the Public API to download an artifact without creating a run or recording a run input relationship.
+>
+> 1. Import the W\&B Python SDK and create a client object with `wandb.Api()`.
+> 2. Retrieve the artifact version with `wandb.Api.artifact()`.
+> 3. Download all files or a specific file from the returned `Artifact` object.
+>
+> Specify the artifact path in the format `entity/project/artifact:alias`.
+>
+> ```python theme={"system"}
+> import wandb
+>
+> api = wandb.Api()
+> artifact = api.artifact("entity/project/artifact:alias")
+> artifact.download()
+> ```
+
+> [tab] W\&B CLI
+>
+> Use the `wandb artifact get` command to download an artifact from the W\&B server.
+>
+> ```
+> $ wandb artifact get project/artifact:alias --root mnist/
+> ```
+
+## Partially download an artifact
+
+You can optionally download part of an artifact based on a prefix. Use the `path_prefix=` (`wandb.Artifact.download(path_prefix=)`) parameter to download a single file or the content of a sub-folder.
+
+```python theme={"system"}
+with wandb.init(project="project-name", job_type="job-type") as run:
+    # Indicate the artifact to use. Format is "name:alias"
+    artifact = run.use_artifact("bike-dataset:latest")
+
+    # Download a specific file or sub-folder
+    artifact.download(path_prefix="bike.png") # downloads only bike.png
+```
+
+Alternatively, you can download files from a certain directory. To do so, specify the directory within the `path_prefix=` parameter. Continuing from the previous code snippet:
+
+```python theme={"system"}
+# downloads files in the images/bikes directory
+artifact.download(path_prefix="images/bikes/") 
+```
+
+## Verify downloaded artifact files
+
+After you download an artifact, call `wandb.Artifact.verify()` to confirm that the local files on disk match the artifact manifest.
+
+The following example downloads an artifact as part of a run and verifies the downloaded files:
+
+```python theme={"system"}
+import wandb
+
+with wandb.init(project="project-name", job_type="job-type") as run:
+    artifact = run.use_artifact("entity/project/my-dataset:latest")
+    artifact_dir = artifact.download()
+    artifact.verify(artifact_dir)
+```
+
+[`wandb.Artifact.verify()`](https://docs.coreweave.com/products/wandb/ref/python/experiments/artifact#method-artifact-verify) recomputes checksums for local files and compares them with the checksums in the artifact manifest. Verification fails if a file is missing or modified, or if the directory contains files that are not included in the artifact.
+
+> [!NOTE]
+>
+> **Artifact verification considerations**
+>
+> * `wandb.Artifact.verify()` does not verify [reference entries](https://docs.coreweave.com/products/wandb/artifacts/track-external-files.md).
+>
+> * Artifacts created with `digest_algorithm="XXH128"` require W\&B Python SDK version 0.29.0 or newer to use `wandb.Artifact.verify()`. Earlier SDK versions do not support XXH128 manifest entries, so verification fails.
+
+## Use an artifact from a different project
+
+Specify the name of the artifact along with its project name to reference an artifact. You can also reference artifacts across entities by specifying the name of the artifact with its entity name.
+
+The following code example demonstrates how to query an artifact from another project as input to the current W\&B run.
+
+```python theme={"system"}
+with wandb.init(project="project-name", job_type="job-type") as run:
+    # Query W&B for an artifact from another project and mark it
+    # as an input to this run.
+    artifact = run.use_artifact("my-project/artifact:alias")
+
+    # Use an artifact from another entity and mark it as an input
+    # to this run.
+    artifact = run.use_artifact("my-entity/my-project/artifact:alias")
+```
+
+## Construct and use an artifact simultaneously
+
+Simultaneously construct and use an artifact. Create an artifact object and pass it to use\_artifact. This creates an artifact in Weights & Biases if it does not exist yet. The [`wandb.Run.use_artifact()`](https://docs.coreweave.com/products/wandb/ref/python/experiments/run#use_artifact) API is idempotent, so you can call it as many times as you like.
+
+```python theme={"system"}
+import wandb
+
+with wandb.init(project="project-name", job_type="job-type") as run:
+    artifact = wandb.Artifact("reference model")
+    artifact.add_file("model.h5")
+    run.use_artifact(artifact)
+```
+
+For more information about constructing an artifact, see [Construct an artifact](https://docs.coreweave.com/products/wandb/artifacts/construct-an-artifact.md).

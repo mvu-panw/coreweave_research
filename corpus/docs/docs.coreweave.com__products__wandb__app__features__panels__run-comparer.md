@@ -1,0 +1,32 @@
+# Compare run metrics
+
+Source: https://docs.coreweave.com/products/wandb/app/features/panels/run-comparer
+
+> Use the Run Comparer panel to compare configuration and metric differences across Weights & Biases experiment runs.
+
+# Compare run metrics
+
+Use the Run Comparer to see differences and similarities across runs in your project. This helps you quickly identify how configuration changes affect metrics so you can decide which experiments to pursue further.
+
+## Add a Run Comparer panel
+
+Add the Run Comparer panel to your workspace before you can use it to compare runs.
+
+1. Select the **Add panels** button in the top right corner of the page.
+2. From the **Evaluation** section, select **Run comparer**.
+
+## Use Run Comparer
+
+Run Comparer shows the configuration and logged metrics for the first 10 visible runs in the project, one column per run. After you add the panel, use the following options to explore and refine your comparison:
+
+* To change the runs to compare, search, filter, group, or sort the list of runs on the left. The Run Comparer updates automatically.
+* To filter or search for a configuration key or a metadata key such as the Python version or the run's creation time, use the search field at the top of the Run Comparer.
+* To see differences and hide identical values, toggle **Diff only** at the top of the panel.
+* To adjust the column width or row height, use the formatting buttons at the top of the panel.
+* To copy any configuration or metric's value, hover over the value, then click the copy button. The entire value is copied, even if it's too long to display on the screen.
+
+> [!NOTE]
+>
+> By default, Run Comparer doesn't differentiate runs with different values for [`job_type`](https://docs.coreweave.com/products/wandb/ref/python/functions/init). This means you can compare runs that aren't comparable within a project. For example, you could compare a training run to a model evaluation run. A training run could contain run logs, hyperparameters, training loss metrics, and the model itself. An evaluation run could use the model to check the model's performance on new training data.
+>
+> When you search, filter, group, or sort the list of runs in the Runs Table, the Run Comparer automatically updates to compare the first 10 runs. Filter or search within the Runs Table to compare similar runs, such as by filtering or sorting the list by `job_type`. Learn more about [filtering runs](https://docs.coreweave.com/products/wandb/runs/filter-runs.md).

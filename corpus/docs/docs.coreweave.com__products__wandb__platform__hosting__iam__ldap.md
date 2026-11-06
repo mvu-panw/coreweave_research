@@ -1,0 +1,62 @@
+# Configure SSO with LDAP
+
+Source: https://docs.coreweave.com/products/wandb/platform/hosting/iam/ldap
+
+# Configure SSO with LDAP
+
+> Configure LDAP-based SSO authentication for W&B Server including connection parameters and environment variables.
+
+This guide is for organization admins who enable LDAP-based single sign-on (SSO) for W\&B Server, so that users can authenticate against an existing LDAP directory instead of managing separate Forge credentials. It explains how to configure the LDAP connection from the W\&B App system settings UI or with environment variables. It also describes the required and optional configuration parameters, including the address, base distinguished name, and attributes. You can set up either an anonymous bind, or bind with an administrator DN and password.
+
+> [!NOTE]
+>
+> Only organization admin roles can enable and configure LDAP authentication.
+
+## Configure LDAP connection
+
+Choose one of the following methods to configure the LDAP connection. Use the W\&B App tab to configure LDAP through the system settings UI, or use the Environment variable tab to configure LDAP at deployment time.
+
+> [tab] W\&B App
+>
+> To configure LDAP through the W\&B App:
+>
+> 1. Go to the W\&B App.
+> 2. Select your profile icon, then select **System Settings**.
+> 3. Toggle **Configure LDAP Client**.
+> 4. Add the details in the form. For more information about each input, see [Configuration parameters](#configuration-parameters).
+> 5. Click **Update Settings** to test your settings. This step establishes a test client or connection with W\&B Server.
+> 6. If your connection is verified, toggle **Enable LDAP Authentication** and select **Update Settings**.
+>
+> After you complete these steps, W\&B Server authenticates users against your LDAP directory.
+
+> [tab] Environment variable
+>
+> Set an LDAP connection with the following environment variables:
+>
+> | Environment variable | Required | Example |
+> | - | - | - |
+> | `LOCAL_LDAP_ADDRESS` | Yes | `ldaps://ldap.example.com:636` |
+> | `LOCAL_LDAP_BASE_DN` | Yes | `email=mail,group=gidNumber` |
+> | `LOCAL_LDAP_BIND_DN` | No | `cn=admin`, `dc=example,dc=org` |
+> | `LOCAL_LDAP_BIND_PW` | No | |
+> | `LOCAL_LDAP_ATTRIBUTES` | Yes | `email=mail`, `group=gidNumber` |
+> | `LOCAL_LDAP_TLS_ENABLE` | No | |
+> | `LOCAL_LDAP_GROUP_ALLOW_LIST` | No | |
+> | `LOCAL_LDAP_LOGIN` | No | |
+>
+> The following Configuration parameters section defines each environment variable. For clarity, the definition names omit the environment variable prefix `LOCAL_LDAP`.
+
+## Configuration parameters
+
+The following table lists and describes required and optional LDAP configurations.
+
+| Environment variable | Definition | Required |
+| - | - | - |
+| `ADDRESS` | The address of your LDAP server within the VPC that hosts W\&B Server. | Yes |
+| `BASE_DN` | The root path that searches start from, required for any queries into this directory. | Yes |
+| `BIND_DN` | Path of the administrative user registered in the LDAP server. Required if the LDAP server doesn't support unauthenticated binding. If specified, W\&B Server connects to the LDAP server as this user. Otherwise, W\&B Server connects with anonymous binding. | No |
+| `BIND_PW` | The password for the administrative user, used to authenticate the binding. If left blank, W\&B Server connects with anonymous binding. | No |
+| `ATTRIBUTES` | Provide email and group ID attribute names as comma-separated string values. | Yes |
+| `TLS_ENABLE` | Enable TLS. | No |
+| `GROUP_ALLOW_LIST` | Group allowlist. | No |
+| `LOGIN` | Instructs W\&B Server to use LDAP to authenticate. Set to either `True` or `False`. Optionally set this to `False` to test the LDAP configuration. Set this to `True` to start LDAP authentication. | No |

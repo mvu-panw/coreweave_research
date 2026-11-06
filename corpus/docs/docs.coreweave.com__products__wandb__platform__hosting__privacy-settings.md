@@ -1,0 +1,92 @@
+# Configure privacy settings
+
+Source: https://docs.coreweave.com/products/wandb/platform/hosting/privacy-settings
+
+# Configure privacy settings
+
+> Enforce privacy settings for team visibility, project access, and code saving defaults in Weights & Biases.
+
+This page describes how organization and team admins can configure privacy settings in Weights & Biases to control team visibility, project access, invitations, report sharing, and default code saving. Use these settings to standardize privacy across an organization or to tune controls for a single team.
+
+Organization admins can configure privacy settings at the organization scope, and team admins can configure them at the team scope. When configured at the organization scope, the settings are enforced for all teams in that organization.
+
+> [!NOTE]
+>
+> To avoid unexpected changes in team workflows, Weights & Biases recommends that organization admins enforce a privacy setting only after communicating in advance to all team admins and users in the organization.
+
+## Enforce privacy settings for all teams
+
+Organization admins can enforce privacy settings for all teams in their organization from the **Privacy** tab of the organization settings. An enforced setting applies to every team in the organization, and team admins can't override it at the team scope. When a team admin opens a setting that you enforce, Weights & Biases shows the following message: "This setting is locked because it's enforced org-wide. To make changes, please contact your org admin."
+
+To open organization privacy settings, complete the following steps:
+
+1. Sign in as an organization admin.
+2. On Multi-tenant Cloud, navigate to `https://forge.coreweave.com/account-settings/[ORGANIZATION]/settings`. Replace `[ORGANIZATION]` with your organization name. On Dedicated Cloud or Self-Managed deployments, open your instance organization dashboard. For environment-specific URLs, see [Add and manage users](https://docs.coreweave.com/products/wandb/platform/hosting/iam/access-management/manage-organization.md#add-and-manage-users).
+3. In the left navigation, select **Privacy**.
+
+The following sections describe the settings on the **Privacy** tab. Each setting is a toggle, and Weights & Biases saves your changes immediately.
+
+### Access Control
+
+Manage team visibility and member joining processes.
+
+* **Enforce team visibility restrictions**: Each user can see only the teams they belong to and the profiles of their teammates. Teams and users outside their memberships are hidden.
+* **Prevent automatic team joining**: Users with a matching organization email domain can't automatically join any team. Explicit invitations are required.
+* **Limit invitation privileges**: Only administrators can invite new members to any team.
+* **Restrict invitations to claimed domain**: Only users whose email address ends in your organization's claimed email domain can be invited to the organization.
+  \[!NOTE] This setting appears only in [Multi-tenant Cloud](https://docs.coreweave.com/products/wandb/platform/hosting/hosting-options/multi_tenant_cloud.md), for Enterprise organizations that have claimed an email domain. See [Domain capture](https://docs.coreweave.com/products/wandb/platform/hosting/iam/access-management/manage-organization.md#domain-capture).
+* **Disable API key creation**: Users and team service accounts can't create new API keys. Organization service accounts can still create keys, and existing keys keep working. See [Disable API key creation](https://docs.coreweave.com/products/wandb/platform/hosting/iam/api-keys.md#disable-api-key-creation).
+  \[!NOTE] This setting appears only in Dedicated Cloud and Self-Managed v0.84.0 and above.
+
+### Project and content security
+
+Control project privacy and regulate content sharing.
+
+* **Enforce private projects**: All new projects across all teams are set to private or [restricted](https://docs.coreweave.com/products/wandb/platform/hosting/iam/access-management/restricted-projects.md), and can't be made public or open at the team scope.
+* **Disable public report sharing**: Turns off public sharing of reports from private projects and deactivates existing public links.
+* **Disable default code saving**: Turns off code saving by default for all teams. See [Code saving](https://docs.coreweave.com/products/wandb/app/features/panels/code.md).
+* **Redact PII in Weave traces**: The Weave server redacts select PII before storing traces. See [Redact PII from traces](https://docs.coreweave.com/products/wandb/weave/guides/tracking/redact-pii.md#enable-organization-level-pii-redaction).
+
+### Smart features
+
+The **Smart features** section controls LLM-powered features and data sharing. This section appears on the **Privacy** tab only if your organization has access to Weights & Biases AI features. It contains three settings:
+
+* **Enable AI-powered features**
+* **Use Customer Data for product improvement**
+* **Allow model training on Customer Data**
+
+> [!NOTE]
+>
+> Your organization's plan or contract can lock these settings. If a setting is locked, only Pro and Enterprise organizations can change it.
+
+See [Governance and security](https://docs.coreweave.com/products/aria/governance.md).
+
+### ARIA
+
+The **ARIA** section controls what ARIA can do across your organization's projects. This section appears on the **Privacy** tab only if project memory is enabled for your organization.
+
+* **Enable project memory**: Lets ARIA remember project details, such as conventions and past corrections, and apply them in future conversations. ARIA shares a project's memory with the team that owns the project. When this setting is off, ARIA uses no memories and records nothing new, but existing memory is kept. See [View and manage project memories](https://docs.coreweave.com/products/aria.md#view-and-manage-project-memories).
+
+## Configure privacy settings for a team
+
+If a setting isn't enforced at the organization scope, team admins can manage it for their own team from the **Privacy** section of the team **Settings** page.
+
+To open team privacy settings, complete the following steps:
+
+1. In Weights & Biases, open the team's dashboard.
+2. In the left navigation, select **Team settings**.
+3. Open the **Privacy** section.
+
+The **Privacy** section contains the following settings. Weights & Biases saves your changes immediately.
+
+* **Default visibility for new projects in \[TEAM]**: Sets the visibility scope that Weights & Biases applies to new projects in the team. See [Visibility scopes](https://docs.coreweave.com/products/wandb/platform/hosting/iam/access-management/restricted-projects.md#visibility-scopes).
+* **Hide this team from all non-members**: Hides the team from users who aren't members.
+  \[!WARNING] Hiding a team also blocks public access to any open projects and reports that belong to that team. Weights & Biases asks you to confirm before applying this setting.
+* **Make all future team projects private (public sharing not allowed)**: Ensures all new projects created in the team are private.
+* **Allow any team member to invite other members (not just admins)**: Lets all team members invite new members, not only admins.
+* **Disable public sharing to outside of team for reports in private projects**: Turns off public sharing of reports in the team's private projects. This also deactivates existing magic links.
+* **Automatically recommend new users with matching email domains (`[DOMAIN]`) join this team upon signup**: Prompts new users whose email address matches your organization's claimed email domain to join this team when they sign up. In the W\&B App, `[DOMAIN]` is your organization's claimed email domain.
+  \[!NOTE] This setting appears only in [Multi-tenant Cloud](https://docs.coreweave.com/products/wandb/platform/hosting/hosting-options/multi_tenant_cloud.md), and only organization admins can change it. If your organization hasn't claimed an email domain, the setting instead links to **Enable domain capture** in organization settings. See [Domain capture](https://docs.coreweave.com/products/wandb/platform/hosting/iam/access-management/manage-organization.md#domain-capture).
+* **Enable code saving by default**: Automatically saves code for all runs in the team. See [Code saving](https://docs.coreweave.com/products/wandb/app/features/panels/code.md).
+
+Settings you configure here apply only to this team. They don't affect other teams in the organization.

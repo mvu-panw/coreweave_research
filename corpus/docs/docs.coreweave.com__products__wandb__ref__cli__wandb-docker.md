@@ -1,0 +1,73 @@
+# wandb docker
+
+Source: https://docs.coreweave.com/products/wandb/ref/cli/wandb-docker
+
+# wandb docker
+
+[View source](https://github.com/wandb/wandb/blob/v0.31.0/wandb/cli/cli.py#L2437)
+
+## Usage
+
+```bash theme={"system"}
+docker [OPTIONS] [DOCKER_RUN_ARGS]... [DOCKER_IMAGE]
+```
+
+## Description
+
+Run code in a Docker container with W\&B configured.
+
+Start a Docker container, inject the WANDB\_DOCKERs environment
+variable, and mount the current working directory at `/app` by
+default. Inject WANDB\_API\_KEY if logged in. Override the
+container entrypoint to ensure `wandb` is installed.
+
+Pass additional arguments to insert them into `docker run` before
+the image name. Use a default image if none is specified.
+
+Use `--jupyter` to install and start JupyterLab on port 8888.
+Enable the NVIDIA runtime automatically if NVIDIA Docker is
+available on the host.
+
+Requires Docker to be installed and running on the host machine.
+
+To inject W\&B environment variables into an existing `docker run`
+command without modifying the entrypoint, use `wandb docker-run`.
+
+For example, to run the default image and mount a dataset into the container:
+
+```bash theme={"system"}
+wandb docker -v /mnt/dataset:/app/data
+```
+
+To run a default image and start JupyterLab:
+
+```bash theme={"system"}
+wandb docker -v /mnt/dataset:/app/data --jupyter
+```
+
+To run a GPU-enabled image with a training command:
+
+```bash theme={"system"}
+wandb docker wandb/deepo:keras-gpu --no-tty --cmd "python train.py"
+```
+
+## Arguments
+
+| Name | Default | Type |
+| - | - | - |
+| `docker_run_args` | STR | False |
+| `docker_image` | STR | False |
+
+## Options
+
+| Flag | Type | Description |
+| - | - | - |
+| `--nvidia` | BOOL Flag | Use the nvidia runtime, defaults to nvidia if nvidia-docker is present. **Default**: False |
+| `--digest` | BOOL Flag | Output the image digest and exit. **Default**: False |
+| `--jupyter` | BOOL Flag | Run jupyter lab in the container. **Default**: False |
+| `--dir` | STR | Which directory to mount the code in the container. **Default**: /app |
+| `--no-dir` | BOOL Flag | Don't mount the current directory. **Default**: False |
+| `--shell` | STR | The shell to start the container with. **Default**: /bin/bash |
+| `--port` | STR | The host port to bind jupyter on. **Default**: 8888 |
+| `--cmd` | STR | The command to run in the container. **Default**: None |
+| `--no-tty` | BOOL Flag | Run the command without a tty. **Default**: False |

@@ -1,0 +1,44 @@
+# wandb enabled
+
+Source: https://docs.coreweave.com/products/wandb/ref/cli/wandb-enabled
+
+# wandb enabled
+
+[View source](https://github.com/wandb/wandb/blob/v0.31.0/wandb/cli/cli.py#L3462)
+
+## Usage
+
+```bash theme={"system"}
+enabled [OPTIONS]
+```
+
+## Description
+
+Re-enable W\&B after it was deactivated with `wandb disabled`.
+
+Set the mode to `online` to restore full W\&B functionality,
+including cloud syncing and artifact storage.
+
+Does not upload data logged while W\&B was set to `disabled`, but allows
+new data to be logged and synced.
+
+To switch between online and offline modes without fully deactivating W\&B,
+use `wandb online` or `wandb offline` instead.
+
+For example, to restore W\&B functionality after deactivating it with `wandb disabled`:
+
+```bash theme={"system"}
+wandb enabled
+```
+
+To run a training script with W\&B logging and syncing restored:
+
+```bash theme={"system"}
+python train.py # Log and sync data to W&B
+```
+
+## Options
+
+| Flag | Type | Description |
+| - | - | - |
+| `--service` | BOOL Flag | No effect. Accepted for backwards compatibility. **Default**: True |

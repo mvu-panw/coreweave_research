@@ -1,0 +1,167 @@
+# Create a launch job
+
+Source: https://docs.coreweave.com/products/wandb/platform/launch/create-launch-job
+
+# Create a launch job
+
+> Create W&B Launch jobs from Git repositories, code artifacts, or Docker images using the wandb launch command.
+
+> [card] [Try in Colab](https://colab.research.google.com/drive/1wX0OSVxZJDHRsZaOaOEDx-lLUrO1hHgP)
+
+This page shows you how to create W\&B Launch jobs so you can reproduce W\&B runs on demand. Launch jobs are blueprints for reproducing W\&B runs. Jobs are W\&B Artifacts that capture the source code, dependencies, and inputs required to execute a workload.
+
+Use this page when you want to package a workload from a Git repository, a local code directory, or a pre-built Docker image so that you can re-run it later with different parameters or on different infrastructure.
+
+Create and run jobs with the `wandb launch` command.
+
+> [!NOTE]
+>
+> To create a job without submitting it for execution, use the `wandb job create` command. See the [command reference docs](https://docs.coreweave.com/products/wandb/ref/cli/wandb-job/wandb-job-create.md) for more information.
+
+## Git jobs
+
+Use a Git-based job when your source code lives in a remote repository and you want Launch to clone it at a specific commit, branch, or tag. W\&B Launch clones code and other tracked assets from a commit, branch, or tag in a remote Git repository. Use the `--uri` or `-u` flag to specify the URI containing the code, along with an optional `--build-context` flag to specify a subdirectory.
+
+Run a hello world job from a Git repository with the following command:
+
+```bash theme={"system"}
+wandb launch --uri "https://github.com/wandb/launch-jobs.git" --build-context jobs/hello_world --dockerfile Dockerfile.wandb --project "hello-world" --job-name "hello-world" --entry-point "python job.py"
+```
+
+The command does the following:
+
+1. Clones the [W\&B Launch jobs repository](https://github.com/wandb/launch-jobs) to a temporary directory.
+2. Creates a job named `hello-world-git` in the `hello` project. The job is associated with the commit at the head of the default branch of the repository.
+3. Builds a container image from the `jobs/hello_world` directory and the `Dockerfile.wandb`.
+4. Starts the container and runs `python job.py`.
+
+After the command completes, you have a reusable Git-based job in the `hello-world` project that other users or automations can re-run with `wandb launch`.
+
+To build a job from a specific branch or commit hash, append the `-g`, `--git-hash` argument. For a full list of arguments, run `wandb launch --help`.
+
+### Remote URL format
+
+The Git remote associated with a Launch job can be either an HTTPS or an SSH URL. The URL type determines the protocol used to fetch job source code.
+
+| Remote URL type | URL format | Requirements for access and authentication |
+| - | - | - |
+| HTTPS | `https://github.com/organization/repository.git` | Username and password to authenticate with the Git remote |
+| SSH | `git@github.com:organization/repository.git` | SSH key to authenticate with the Git remote |
+
+Note that the exact URL format varies by hosting provider. Jobs created with `wandb launch --uri` use the transfer protocol specified in the provided `--uri`.
+
+## Code artifact jobs
+
+Use a code artifact job when your source lives in a local directory rather than a remote Git repository. You can create jobs from any source code stored in a W\&B Artifact. Use a local directory with the `--uri` or `-u` argument to create a new code artifact and job.
+
+To get started, create an empty directory and add a Python script named `main.py` with the following content:
+
+```python theme={"system"}
+import wandb
+
+with wandb.init() as run:
+    run.log({"metric": 0.5})
+```
+
+Add a file `requirements.txt` with the following content:
+
+```text theme={"system"}
+wandb>=0.17.1
+```
+
+Log the directory as a code artifact and launch a job with the following command:
+
+```bash theme={"system"}
+wandb launch --uri . --job-name hello-world-code --project launch-quickstart --entry-point "python main.py"
+```
+
+The preceding command does the following:
+
+1. Logs the current directory as a code artifact named `hello-world-code`.
+2. Creates a job named `hello-world-code` in the `launch-quickstart` project.
+3. Builds a container image from the current directory and Launch's default Dockerfile. The default Dockerfile installs the `requirements.txt` file and sets the entry point to `python main.py`.
+
+After the command completes, your local code is captured as a W\&B code artifact and is associated with a reusable job in the `launch-quickstart` project.
+
+## Image jobs
+
+Alternatively, you can build jobs from pre-made Docker images. This approach is useful when you already have a build system for your ML code, or when you don't expect to adjust the code or requirements for the job but do want to experiment with hyperparameters or different infrastructure scales.
+
+Launch pulls the image from a Docker registry and runs it with the specified entry point, or the default entry point if none is specified. Pass a full image tag to the `--docker-image` option to create and run a job from a Docker image.
+
+Run a job from a pre-made image with the following command:
+
+```bash theme={"system"}
+wandb launch --docker-image "wandb/job_hello_world:main" --project "hello-world"           
+```
+
+## Automatic job creation
+
+In addition to jobs you create explicitly with `wandb launch`, Weights & Biases can create jobs for you as a side effect of running tracked code. Weights & Biases automatically creates and tracks a job for any run with tracked source code, even if that run wasn't created with Launch. Runs are considered to have tracked source code if any of the three following conditions are met:
+
+* The run has an associated Git remote and commit hash.
+* The run logged a code artifact. See [`Run.log_code`](https://docs.coreweave.com/products/wandb/ref/python/experiments/run#log_code).
+* The run was executed in a Docker container with the `WANDB_DOCKER` environment variable set to an image tag.
+
+If Weights & Biases automatically creates your Launch job from a W\&B run, Weights & Biases infers the Git remote URL from the local Git repository.
+
+### Launch job names
+
+By default, Weights & Biases automatically generates a job name for you. The name depends on how the job is created (GitHub, code artifact, or Docker image). Alternatively, you can define a Launch job's name with environment variables or with the W\&B Python SDK.
+
+The following table describes the job naming convention used by default based on job source:
+
+| Source | Naming convention |
+| - | - |
+| GitHub | `job-[GIT-REMOTE-URL]-[PATH-TO-SCRIPT]` |
+| Code artifact | `job-[CODE-ARTIFACT-NAME]` |
+| Docker image | `job-[IMAGE-NAME]` |
+
+Name your job with a Weights & Biases environment variable or with the W\&B Python SDK.
+
+> [tab] Environment variable
+>
+> Set the `WANDB_JOB_NAME` environment variable to your preferred job name. For example:
+>
+> ```bash theme={"system"}
+> WANDB_JOB_NAME=awesome-job-name
+> ```
+
+> [tab] W\&B Python SDK
+>
+> Define the name of your job with `wandb.Settings`. Then pass this object when you initialize Weights & Biases with `wandb.init()`. For example:
+>
+> ```python theme={"system"}
+> settings = wandb.Settings(job_name="my-job-name")
+> wandb.init(settings=settings)
+> ```
+
+> [!NOTE]
+>
+> For Docker image jobs, Weights & Biases automatically adds the version alias as an alias to the job.
+
+## Containerization
+
+Jobs run in a container. Image jobs use a pre-built Docker image, while Git and code artifact jobs require a container build step.
+
+You can customize job containerization with arguments to `wandb launch` and files within the job source code. The following sections describe how to control the build context, supply a custom Dockerfile, and manage Python dependencies.
+
+### Build context
+
+The term build context refers to the tree of files and directories sent to the Docker daemon to build a container image. By default, Launch uses the root of the job source code as the build context. To specify a subdirectory as the build context, use the `--build-context` argument of `wandb launch` when you create and launch a job.
+
+> [!NOTE]
+>
+> The `--build-context` argument is useful for working with Git jobs that refer to a monorepo with multiple projects. By specifying a subdirectory as the build context, you can build a container image for a specific project within the monorepo.
+>
+> See [Git jobs](#git-jobs) for a demonstration of how to use the `--build-context` argument with the official W\&B Launch jobs repository.
+
+### Dockerfile
+
+The Dockerfile is a text file that contains instructions for building a Docker image. By default, Launch uses a default Dockerfile that installs the `requirements.txt` file. To use a custom Dockerfile, specify the path to the file with the `--dockerfile` argument of `wandb launch`.
+
+Specify the Dockerfile path relative to the build context. For example, if the build context is `jobs/hello_world`, and the Dockerfile is located in the `jobs/hello_world` directory, set the `--dockerfile` argument to `Dockerfile.wandb`. See [Git jobs](#git-jobs) for a demonstration of how to use the `--dockerfile` argument with the official W\&B Launch jobs repository.
+
+### Requirements file
+
+If no custom Dockerfile is provided, Launch looks in the build context for Python dependencies to install. If a `requirements.txt` file is found at the root of the build context, Launch installs the dependencies listed in the file. Otherwise, if a `pyproject.toml` file is found, Launch installs dependencies from the `project.dependencies` section.

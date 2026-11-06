@@ -1,0 +1,64 @@
+# wandb beta sync
+
+Source: https://docs.coreweave.com/products/wandb/ref/cli/wandb-beta/wandb-beta-sync
+
+# wandb beta sync
+
+[View source](https://github.com/wandb/wandb/blob/v0.31.0/wandb/cli/beta.py#L54)
+
+## Usage
+
+```bash theme={"system"}
+sync [OPTIONS] [PATHS]...
+```
+
+## Description
+
+Upload .wandb files specified by PATHS.
+
+This is an improvement on `wandb sync` with additional features and better
+UX and performance. It will eventually be absorbed into `wandb sync`.
+
+PATHS can include .wandb files, run directories containing .wandb files,
+and "wandb" directories containing run directories.
+
+For example, to sync all runs in the current .wandb directory:
+
+```bash theme={"system"}
+wandb beta sync ./wandb
+```
+
+To sync a specific run by specifying the run directory:
+
+```bash theme={"system"}
+wandb beta sync ./wandb/run-20250813_124246-n67z9ude
+```
+
+Or equivalently:
+
+```bash theme={"system"}
+wandb beta sync ./wandb/run-20250813_124246-n67z9ude/run-n67z9ude.wandb
+```
+
+## Arguments
+
+| Name | Default | Type |
+| - | - | - |
+| `paths` | PATH | False |
+
+## Options
+
+| Flag | Type | Description |
+| - | - | - |
+| `--live` | BOOL Flag | Sync a run while it's still being logged.  This may hang if the process generating the run crashes uncleanly. **Default**: False |
+| `-e, --entity` | STR | An entity override to use for all runs being synced. **Default**: |
+| `-p, --project` | STR | A project override to use for all runs being synced. **Default**: |
+| `--id` | STR | A run ID override to use for all runs being synced.  If setting this and syncing multiple files (with the same entity and project), the files will be synced in order of start time. This is intended to work with syncing multiple resumed fragments of the same run. **Default**: |
+| `--job-type` | STR | A job type override for all runs being synced. **Default**: |
+| `--replace-tags` | STR | Rename tags using the format 'old1=new1,old2=new2'. **Default**: |
+| `--skip-synced` | BOOL Flag | Skip runs that have already been synced with this command. **Default**: True |
+| `--skip-online` | BOOL Flag | Skip online runs. **Default**: True |
+| `--dry-run` | BOOL Flag | Print what would happen without uploading anything. **Default**: False |
+| `--yes` | BOOL Flag | Skip confirmation. **Default**: False |
+| `-v, --verbose` | BOOL Flag | Print more information. **Default**: False |
+| `-n` | INT | Max number of runs to sync at a time.  When syncing multiple files that are part of the same run, the files are synced sequentially in order of start time regardless of this setting. This happens for resumed runs or when using the --id parameter. **Default**: 5 |

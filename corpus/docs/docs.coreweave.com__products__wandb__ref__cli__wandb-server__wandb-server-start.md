@@ -1,0 +1,58 @@
+# wandb server start
+
+Source: https://docs.coreweave.com/products/wandb/ref/cli/wandb-server/wandb-server-start
+
+# wandb server start
+
+[View source](https://github.com/wandb/wandb/blob/v0.31.0/wandb/cli/cli.py#L2621)
+
+## Usage
+
+```bash theme={"system"}
+start [OPTIONS]
+```
+
+## Description
+
+Start a local W\&B Server instance in a Docker container.
+
+Pull and run the wandb/local Docker image. Map the specified host
+port to port 8080 in the container and mount a persistent Docker
+volume named "wandb" to store data.
+
+Configure the "base\_url" setting to point to the local server so
+that subsequent W\&B client calls use it. Prompt for login if no
+API key is found.
+
+Requires Docker to be installed and running on the host machine.
+
+This command starts only the W\&B Models UI. It is provided only
+for local testing. In production, the W\&B Kubernetes Operator is the recommended
+way to deploy W\&B Server. See
+[https://docs.wandb.ai/platform/hosting/self-managed/operator](https://docs.wandb.ai/platform/hosting/self-managed/operator).
+
+For example, to start a local W\&B server on the default port (8080):
+
+```bash theme={"system"}
+wandb server start
+```
+
+To start the server on port 9090:
+
+```bash theme={"system"}
+wandb server start -p 9090
+```
+
+To start the server in the foreground:
+
+```bash theme={"system"}
+wandb server start --no-daemon
+```
+
+## Options
+
+| Flag | Type | Description |
+| - | - | - |
+| `--port, -p` | STR | The host port to bind W\&B server on. **Default**: 8080 |
+| `--env, -e` | STR | Environment variables to pass to wandb/local Docker image. **Default**: \[] |
+| `--daemon` | BOOL Flag | Run the server in the background. Use --no-daemon to run in the foreground. **Default**: True |

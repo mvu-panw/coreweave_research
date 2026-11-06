@@ -1,0 +1,77 @@
+# wandb agent
+
+Source: https://docs.coreweave.com/products/wandb/ref/cli/wandb-agent
+
+# wandb agent
+
+[View source](https://github.com/wandb/wandb/blob/v0.31.0/wandb/cli/cli.py#L1834)
+
+## Usage
+
+```bash theme={"system"}
+agent [OPTIONS] SWEEP_ID
+```
+
+## Description
+
+Start a sweep agent.
+
+Poll the W\&B server for hyperparameter configurations from
+the sweep and start a run for each configuration.
+
+The agent exits when the sweep completes, the sweep
+is stopped, cancelled, or the `--count` limit is reached.
+
+Find the sweep ID within the Sweeps tab in the W\&B App
+or in the output of the `wandb sweep` command when you create a new sweep.
+
+The sweep ID can include the entity and project path
+(entity/project/sweep\_id) or the eight character sweep ID.
+
+For example, to start an agent for a sweep with a sweep ID of wbyz9876:
+
+```bash theme={"system"}
+wandb agent wbyz9876
+```
+
+To start an agent with a run limit of 10 runs for the sweep:
+
+```bash theme={"system"}
+wandb agent --count 10 wbyz9876
+```
+
+To start an agent for a sweep and save it to a project
+called "sweeps-project" that belongs to the "team-awesome" entity:
+
+```bash theme={"system"}
+wandb agent -p sweeps-project -e team-awesome wbyz9876
+```
+
+To forward signals to child runs for clean shutdown:
+
+```bash theme={"system"}
+wandb agent --forward-signals wbyz9876
+```
+
+To stop the agent after 5 runs fail back to back:
+
+```bash theme={"system"}
+wandb agent --max-consecutive-failed-runs 5 wbyz9876
+```
+
+## Arguments
+
+| Name | Default | Type |
+| - | - | - |
+| `sweep_id` | STR | True |
+
+## Options
+
+| Flag | Type | Description |
+| - | - | - |
+| `--project, -p` | STR | Set the project to upload runs to. **Default**: None |
+| `--entity, -e` | STR | Set the entity to scope the project to. **Default**: None |
+| `--count` | INT | Maximum number of runs this agent will execute. Continues until the sweep completes if not set. **Default**: None |
+| `--forward-signals, -f` | BOOL Flag | Forward signals (e.g. SIGINT/SIGTERM) to child runs so they can shut down cleanly. **Default**: False |
+| `--term-timeout, -t` | INT | Time (in seconds) after receiving a shutdown signal (e.g. SIGINT /SIGTERM) to force-kill child runs which have not finished since receiving the initial forwarded signal. Does nothing if --forward-signals is not set. **Default**: None |
+| `--max-consecutive-failed-runs` | INT | Shut the agent down once this many runs have failed back to back. **Default**: None |

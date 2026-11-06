@@ -1,0 +1,7 @@
+# How do I control who can push to a queue?
+
+Source: https://docs.coreweave.com/products/wandb/platform/launch/launch-faq/control_push_queue
+
+# How do I control who can push to a queue?
+
+Queues are specific to a user team. Define the owning entity when you create the queue. To restrict access, modify team membership.

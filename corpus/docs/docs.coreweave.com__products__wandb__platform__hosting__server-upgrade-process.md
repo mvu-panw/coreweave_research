@@ -1,0 +1,118 @@
+# Update Weights & Biases license and version
+
+Source: https://docs.coreweave.com/products/wandb/platform/hosting/server-upgrade-process
+
+> Guide for updating Weights & Biases version and license across different installation methods.
+
+# Update Weights & Biases license and version
+
+This guide shows W\&B Server administrators how to update the W\&B Server version and license key for an existing self-managed deployment. Keeping your server and license current ensures access to the latest features, fixes, and continued entitlement to use W\&B Server.
+
+Update your W\&B Server version and license with the same method you used to install W\&B Server. The following table lists how to update your license and version based on different deployment methods.
+
+| Release type | Description |
+| - | - |
+| [Terraform](#update-with-terraform) | Weights & Biases supports three public Terraform modules for cloud deployment: [AWS](https://registry.terraform.io/modules/wandb/wandb/aws/latest), [Google Cloud](https://registry.terraform.io/modules/wandb/wandb/google/latest), and [Azure](https://registry.terraform.io/modules/wandb/wandb/azurerm/latest). |
+| [Helm](#update-with-helm) | Use the [Helm Chart](https://github.com/wandb/helm-charts) to install Weights & Biases into an existing Kubernetes cluster. |
+
+## Update with Terraform
+
+If you deployed W\&B Server with one of the Weights & Biases-maintained Terraform modules, use Terraform to update both your license key and the Weights & Biases version in place. The following table lists Weights & Biases-managed Terraform modules by cloud platform.
+
+| Cloud provider | Terraform module |
+| - | - |
+| AWS | [AWS Terraform module](https://registry.terraform.io/modules/wandb/wandb/aws/latest) |
+| Google Cloud | [Google Cloud Terraform module](https://registry.terraform.io/modules/wandb/wandb/google/latest) |
+| Azure | [Azure Terraform module](https://registry.terraform.io/modules/wandb/wandb/azurerm/latest) |
+
+1. Navigate to the Weights & Biases-maintained Terraform module for your cloud provider. See the preceding table to find the Terraform module that matches your cloud provider.
+
+2. In your Terraform configuration, update `wandb_version` and `license` in your Terraform `wandb_app` module configuration:
+
+   ```hcl theme={"system"}
+   module "wandb_app" {
+       source  = "wandb/wandb/[CLOUD-SPECIFIC-MODULE]"
+       version = "new_version"
+       license       = "new_license_key" # Your new license key
+       wandb_version = "new_wandb_version" # Desired W&B version
+       ...
+   }
+   ```
+
+3. Apply the Terraform configuration with `terraform plan` and `terraform apply`.
+   ```bash theme={"system"}
+   terraform init
+   terraform apply
+   ```
+
+4. Optional: If you use a `terraform.tfvars` or other `.tfvars` file, update or create one with the new Weights & Biases version and license key.
+   ```bash theme={"system"}
+   terraform plan -var-file="terraform.tfvars"
+   ```
+   From your Terraform workspace directory, apply the configuration:
+   ```bash theme={"system"}
+   terraform apply -var-file="terraform.tfvars"
+   ```
+
+After Terraform applies the change, your deployment runs the specified Weights & Biases version and uses the updated license key.
+
+## Update with Helm
+
+> [!WARNING]
+>
+> The `wandb` Helm chart is deprecated and no longer supported. It deployed a single pod and has been replaced by the [W\&B Kubernetes Operator](https://docs.coreweave.com/products/wandb/platform/hosting/self-managed/operator.md). If you're still using this chart, follow the [migration guide](https://docs.coreweave.com/products/wandb/platform/hosting/self-managed/operator.md#migrate-self-managed-instances-to-wb-operator) to move to the operator.
+
+Two Helm-based update paths are available: update from your existing Helm values file, or set the new license and image tag directly on the upgrade command. The following sections describe each approach.
+
+### Update Weights & Biases with spec
+
+Use this approach when you manage your Helm configuration in a tracked `*.yaml` values file.
+
+1. Specify a new version by modifying the `image.tag` or `license` values, or both, in your Helm chart `*.yaml` configuration file:
+
+   ```yaml theme={"system"}
+   license: 'new_license'
+   image:
+     repository: wandb/local
+     tag: 'new_version'
+   ```
+
+2. Update the Helm repository and upgrade the Weights & Biases release using your values file:
+
+   ```bash theme={"system"}
+   helm repo update
+   helm upgrade --namespace=wandb --create-namespace \
+     --install wandb wandb/wandb --version ${chart_version} \
+     -f ${wandb_install_spec.yaml}
+   ```
+
+### Update license and version directly
+
+Use this approach to update the license and image tag without editing a values file, and reuse your existing Helm release configuration.
+
+1. Set the new license key and image tag as environment variables:
+
+   ```bash theme={"system"}
+   export LICENSE='new_license'
+   export TAG='new_version'
+   ```
+
+2. Upgrade your Helm release, merging the new values with the existing configuration:
+
+   ```bash theme={"system"}
+   helm repo update
+   helm upgrade --namespace=wandb --create-namespace \
+     --install wandb wandb/wandb --version ${chart_version} \
+     --reuse-values --set license=$LICENSE --set image.tag=$TAG
+   ```
+
+For more information, see the [upgrade guide](https://github.com/wandb/helm-charts/blob/main/upgrade.md) in the public repository.
+
+## Update with admin UI
+
+Use the admin UI to rotate your license key from within the W\&B App, without changing your deployment configuration. This method only works for updating licenses that aren't set with an environment variable in the Weights & Biases server container, typically in self-managed Docker installations. This method updates the license only. It doesn't change the running W\&B Server version.
+
+1. Obtain a new license from the [Weights & Biases Deployment Page](https://deploy.wandb.ai/), ensuring it matches the correct organization and deployment ID for the deployment you want to upgrade.
+2. Access the **License** page in the W\&B App. Click **Settings** > **License** or browse to `HOST_URL/console/settings/license`, where `HOST_URL` is your W\&B Server host URL.
+3. Navigate to the license management section.
+4. Enter the new license key and save your changes.

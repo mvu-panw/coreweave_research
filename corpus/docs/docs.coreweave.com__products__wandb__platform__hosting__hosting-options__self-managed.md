@@ -1,0 +1,65 @@
+# W&B Self-Managed deployment overview
+
+Source: https://docs.coreweave.com/products/wandb/platform/hosting/hosting-options/self-managed
+
+> Deploy W&B Self-Managed on cloud or on-premises infrastructure
+
+# W&B Self-Managed deployment overview
+
+> [!TIP]
+>
+> Weights & Biases recommends fully managed deployment options such as [W\&B Multi-tenant Cloud](https://docs.coreweave.com/products/wandb/platform/hosting/hosting-options/multi_tenant_cloud.md) or [W\&B Dedicated Cloud](https://docs.coreweave.com/products/wandb/platform/hosting/hosting-options/dedicated-cloud.md). Weights & Biases fully managed services are secure to use, with minimal configuration required.
+
+W\&B Self-Managed lets you run W\&B Server in infrastructure you control, so you can meet internal policies for data residency, network isolation, and compliance. This overview is for IT, DevOps, and MLOps teams who plan, deploy, and operate W\&B Server on their own cloud account or on-premises infrastructure.
+
+Deploy W\&B Server on your [AWS, Google Cloud, or Azure cloud account](#deploy-wb-server-within-Self-Managed-cloud-accounts) or within your [on-premises infrastructure](#deploy-wb-server-in-on-prem-infrastructure).
+
+Your IT, DevOps, or MLOps team has the following responsibilities:
+
+* Provision your deployment.
+* Secure your infrastructure in accordance with your organization's policies, [Security Technical Implementation Guidelines (STIG)](https://en.wikipedia.org/wiki/Security_Technical_Implementation_Guide), if applicable.
+* Maintain compliance with your organization's regulatory requirements, such as [Service and Organization Controls (SOC) 2 Type 2](https://www.aicpa-cima.com/topic/audit-assurance/audit-and-assurance-greater-than-soc-2) and [Health Insurance Portability and Accountability Act of 1996 (HIPAA)](https://www.hhs.gov/hipaa/for-professionals/index.html).
+* Manage upgrades and apply patches.
+* Maintain your W\&B Self-Managed deployment on an ongoing basis.
+
+> [!NOTE]
+>
+> If your organization is subject to regulatory requirements, consider deploying on [W\&B Dedicated Cloud](https://docs.coreweave.com/products/wandb/platform/hosting/hosting-options/dedicated-cloud.md), which is maintained by Weights & Biases.
+>
+> * W\&B Dedicated Cloud's hosting platform meets the requirements of SOC 2 Type 2.
+> * When configured appropriately, a W\&B Dedicated Cloud deployment complies with HIPAA.
+>
+> Refer to the [Weights & Biases Security Portal](https://security.wandb.ai/) to request more information.
+
+## About the W\&B Kubernetes Operator
+
+W\&B Self-Managed installations are delivered and managed through a Kubernetes operator, which handles the day-to-day complexity of running W\&B Server.
+
+Use the W\&B Kubernetes Operator to deploy W\&B Self-Managed. The operator simplifies deploying, administering, troubleshooting, and scaling Weights & Biases.
+
+The operator connects to a central [deploy.wandb.ai](https://deploy.wandb.ai) server to request the latest specification changes for a given release channel and apply them. The operator receives updates as long as the license is valid. The operator uses [Helm](https://helm.sh/) both to install itself and to manage the Weights & Biases Kubernetes stack. The deployment consists of multiple pods, one per service, and each pod name is prefixed with `wandb-`.
+
+Configuration follows a hierarchy: **Release Channel Values** (defaults from Weights & Biases), **User Input Values** (overrides via the System Console), and **Custom Resource Values** (your spec overrides both).
+
+Use the following resources based on your deployment target:
+
+* To deploy W\&B Self-Managed in public cloud or on-premises infrastructure, see [Deploy Weights & Biases with Kubernetes Operator](https://docs.coreweave.com/products/wandb/platform/hosting/self-managed/operator.md).
+* To deploy W\&B Self-Managed to a custom cloud platform that isn't AWS, the requirements are similar to the requirements to deploy in [on-premises infrastructure](#deploy-wb-server-in-on-prem-infrastructure).
+* To deploy W\&B Self-Managed in air-gapped environments, see [Deploy on Air-Gapped Kubernetes](https://docs.coreweave.com/products/wandb/platform/hosting/self-managed/on-premises-deployments/kubernetes-airgapped.md).
+
+You can optionally configure rate limits on your instance to maintain stability. For more information, see [Rate limits](https://docs.coreweave.com/products/wandb/platform/hosting/self-managed/rate-limits.md).
+
+## Required infrastructure
+
+Before you deploy, make sure the following infrastructure is available. All W\&B Self-Managed deployment options depend on these components:
+
+* Kubernetes
+* MySQL 8.4.x database
+* Amazon S3-compatible object storage
+* Redis cache
+
+Weights & Biases can provide recommendations for the different components and provide guidance through the installation process. For more information, see [Requirements](https://docs.coreweave.com/products/wandb/platform/hosting/self-managed/requirements.md).
+
+## Obtain your W\&B Server license
+
+A W\&B Server license authorizes your deployment. You must obtain a license before installation. For step-by-step instructions, see [License](https://docs.coreweave.com/products/wandb/platform/hosting/self-managed/requirements.md#license) on the Requirements page.

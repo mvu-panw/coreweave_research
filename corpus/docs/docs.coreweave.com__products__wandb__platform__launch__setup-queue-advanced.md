@@ -1,0 +1,111 @@
+# Configure launch queue
+
+Source: https://docs.coreweave.com/products/wandb/platform/launch/setup-queue-advanced
+
+# Configure launch queue
+
+> Configure advanced launch queue options including queue config templates with defaults, minimums, and maximums.
+
+This page describes how to configure advanced launch queue options, including queue config templates, dynamic macros, and accelerator base images. These options help administrators enforce guardrails and tailor queues to specific compute environments.
+
+## Set up queue config templates
+
+Queue config templates let administrators manage guardrails on compute consumption. Set defaults, minimums, and maximum values for fields such as memory consumption, GPU, and runtime duration.
+
+After you configure a queue with config templates, members of your team can alter the fields you defined only within the range you specified.
+
+### Configure queue template
+
+You can configure a queue template on an existing queue or on a new queue. The following procedure adds template fields to a queue's config so that team members can only set values within the limits you define.
+
+1. Navigate to the [W\&B Launch App](https://forge.coreweave.com/wandb/launch).
+2. Select **View queue** next to the name of the queue you want to add a template to.
+3. Select the **Config** tab. This shows information about your queue such as when the queue was created, the queue config, and existing launch-time overrides.
+4. Navigate to the **Queue config** section.
+5. Identify the config key-values you want to create a template for.
+6. Replace the value in the config with a template field. Template fields take the form of `{{variable-name}}`.
+7. Click the **Parse configuration** button. When you parse your configuration, Weights & Biases automatically creates tiles below the queue config for each template you created.
+8. For each tile generated, you must first specify the data type (string, integer, or float) the queue config can allow. To do this, select the data type from the **Type** dropdown menu.
+9. Based on your data type, complete the fields that appear within each tile.
+10. Click **Save config**.
+
+After you save the config, the queue enforces the template constraints on subsequent launches.
+
+For example, suppose you want to create a template that limits which AWS instances your team can use. Before you add a template field, your queue config might look something similar to:
+
+```yaml title="launch config" theme={"system"}
+RoleArn: arn:aws:iam:region:account-id:resource-type/resource-id
+ResourceConfig:
+  InstanceType: ml.m4.xlarge
+  InstanceCount: 1
+  VolumeSizeInGB: 2
+OutputDataConfig:
+  S3OutputPath: s3://bucketname
+StoppingCondition:
+  MaxRuntimeInSeconds: 3600
+```
+
+When you add a template field for the `InstanceType`, your config looks like:
+
+```yaml title="launch config" theme={"system"}
+RoleArn: arn:aws:iam:region:account-id:resource-type/resource-id
+ResourceConfig:
+  InstanceType: "{{aws_instance}}"
+  InstanceCount: 1
+  VolumeSizeInGB: 2
+OutputDataConfig:
+  S3OutputPath: s3://bucketname
+StoppingCondition:
+  MaxRuntimeInSeconds: 3600
+```
+
+Next, you click **Parse configuration**. A new tile labeled `aws-instance` appears underneath the **Queue config**.
+
+From there, you select String as the data type from the **Type** dropdown. This populates fields where you can specify values a user can choose from. For example, in the following image the team admin configured two AWS instance types that users can choose from, `ml.m4.xlarge` and `ml.p3.xlarge`:
+
+![Launch queue template tile with AWS instance type options](https://mintcdn.com/coreweave-dbfa0e8d/3Dv_sw2eg8feUJlx/products/wandb/platform/_media/aws_template_example.png?fit=max\&auto=format\&n=3Dv_sw2eg8feUJlx\&q=85\&s=80bbd0a836babef881b18c434fd16195)
+
+## Dynamically configure launch jobs
+
+You can dynamically configure queue configs using macros that the agent evaluates when it dequeues a job from the queue. Use macros to inject run-specific values into your queue config at launch time. You can set the following macros:
+
+| Macro | Description |
+| - | - |
+| `${project_name}` | The name of the project the run launches to. |
+| `${entity_name}` | The owner of the project the run launches to. |
+| `${run_id}` | The ID of the run that launches. |
+| `${run_name}` | The name of the run that launches. |
+| `${image_uri}` | The URI of the container image for this run. |
+
+> [!NOTE]
+>
+> Any custom macro not listed in the preceding table, for example `${MY_ENV_VAR}`, is substituted with an environment variable from the agent's environment.
+
+## Use the launch agent to build images that execute on accelerators or GPUs
+
+If you use launch to build images that run in an accelerator environment, you might need to specify an accelerator base image so that the resulting image is compatible with the target hardware.
+
+The accelerator base image must satisfy the following requirements:
+
+* Debian compatibility. The Launch Dockerfile uses `apt-get` to fetch `python`.
+* Compatible CPU and GPU hardware instruction sets. Make sure your CUDA version is supported by the GPU you intend to use.
+* Compatibility between the accelerator version you provide and the packages installed in your ML algorithm.
+* Any additional steps required to set up the installed packages for compatibility with the hardware.
+
+### Use GPUs with TensorFlow
+
+To ensure TensorFlow uses your GPU, specify a Docker image and its image tag for the `builder.accelerator.base_image` key in the queue resource configuration.
+
+For example, the `tensorflow/tensorflow:latest-gpu` base image ensures TensorFlow uses your GPU. You can configure this using the resource configuration in the queue.
+
+The following JSON snippet demonstrates how to specify the TensorFlow base image in your queue config:
+
+```json title="Queue config" theme={"system"}
+{
+    "builder": {
+        "accelerator": {
+            "base_image": "tensorflow/tensorflow:latest-gpu"
+        }
+    }
+}
+```

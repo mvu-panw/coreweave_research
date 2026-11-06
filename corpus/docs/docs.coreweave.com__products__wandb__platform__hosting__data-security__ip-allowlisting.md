@@ -1,0 +1,21 @@
+# Configure IP allowlisting for Dedicated Cloud
+
+Source: https://docs.coreweave.com/products/wandb/platform/hosting/data-security/ip-allowlisting
+
+# Configure IP allowlisting for Dedicated Cloud
+
+> Restrict access to a W&B Dedicated Cloud instance to authorized IP addresses using IP allowlisting.
+
+This page explains how IP allowlisting works on W\&B [Dedicated Cloud](https://docs.coreweave.com/products/wandb/platform/hosting/hosting-options/dedicated-cloud.md) and how to request it for your instance. Use IP allowlisting to restrict access to your Dedicated Cloud instance to an authorized list of IP addresses, so that only traffic from approved locations can reach the W\&B APIs and the W\&B app UI.
+
+IP allowlisting applies to access from your AI workloads to the W\&B APIs and from your user browsers to the W\&B app UI. After you set up IP allowlisting for your Dedicated Cloud instance, Weights & Biases denies any requests from other unauthorized locations.
+
+IP allowlisting is available on Dedicated Cloud instances on AWS, Google Cloud, and Azure.
+
+To configure IP allowlisting for your Dedicated Cloud instance, contact your Weights & Biases team.
+
+You can use IP allowlisting with [secure private connectivity](https://docs.coreweave.com/products/wandb/platform/hosting/data-security/private-connectivity.md). If you use both, Weights & Biases recommends that you use secure private connectivity for all traffic from your AI workloads and most of the traffic from your user browsers, and use IP allowlisting for instance administration from privileged locations.
+
+> [!WARNING]
+>
+> Weights & Biases recommends that you use [CIDR blocks](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) assigned to your corporate or business egress gateways rather than individual `/32` IP addresses. Using individual IP addresses doesn't scale and has strict limits per cloud.

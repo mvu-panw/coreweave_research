@@ -1,0 +1,50 @@
+# OnAddArtifactAlias
+
+Source: https://docs.coreweave.com/products/wandb/ref/python/automations/onaddartifactalias
+
+# OnAddArtifactAlias
+
+[View source](https://github.com/wandb/wandb/blob/main/wandb/automations/events.py#L270)
+
+## Class wandb.automations.OnAddArtifactAlias
+
+A new alias is assigned to an artifact.
+
+```python theme={"system"}
+*,
+event_type: Literal[ADD_ARTIFACT_ALIAS] = ADD_ARTIFACT_ALIAS,
+scope: Annotated[Union[Annotated[wandb.automations.scopes._ArtifactSequenceScope | wandb.automations.scopes._ArtifactPortfolioScope, BeforeValidator(func=<function parse_scope>, json_schema_input_type=PydanticUndefined), Discriminator(discriminator='typename__', custom_error_type=None, custom_error_message=None, custom_error_context=None)], Annotated[wandb.automations.scopes.RegistryScope | wandb.automations.scopes.ProjectScope, BeforeValidator(func=<function parse_scope>, json_schema_input_type=PydanticUndefined), Discriminator(discriminator='is_registry', custom_error_type=None, custom_error_message=None, custom_error_context=None)], Annotated[wandb.automations.scopes.TeamScope | wandb.automations.scopes.OrgScope, BeforeValidator(func=<function parse_scope>, json_schema_input_type=PydanticUndefined), Discriminator(discriminator='entity_type', custom_error_type=None, custom_error_message=None, custom_error_context=None)]], BeforeValidator(func=<function parse_scope>, json_schema_input_type=PydanticUndefined), Discriminator(discriminator='typename__', custom_error_type=None, custom_error_message=None, custom_error_context=None)],
+filter: Annotated[wandb._filters.operators.And | wandb._filters.operators.Or | wandb._filters.operators.Nor | wandb._filters.operators.Not | wandb._filters.operators.Lt | wandb._filters.operators.Gt | wandb._filters.operators.Lte | wandb._filters.operators.Gte | wandb._filters.operators.Eq | wandb._filters.operators.Ne | wandb._filters.operators.In | wandb._filters.operators.NotIn | wandb._filters.operators.Exists | wandb._filters.operators.Regex | wandb._filters.operators.Contains | wandb._filters.operators.Size | wandb._filters.operators.All | wandb._filters.expressions.FilterExpr | dict[str, Any], Json, BeforeValidator(func=<function ensure_json>, json_schema_input_type=PydanticUndefined), PlainSerializer(func=<function to_json>, return_type=PydanticUndefined, when_used='always'), AfterValidator(func=<function wrap_mutation_event_filter>)] = And(())
+```
+
+## Args
+
+**event\_type** `Literal`
+
+No description provided.
+
+**scope** `Annotated`
+
+The scope of the event.
+
+**filter** `Annotated`
+
+Additional conditions(s), if any, that are required for this event to trigger.
+
+## Examples
+
+Define an event that triggers whenever the alias "prod" is assigned to
+any artifact in the collection "my-collection":
+
+```python theme={"system"}
+from wandb import Api
+from wandb.automations import OnAddArtifactAlias, ArtifactEvent
+
+api = Api()
+collection = api.artifact_collection(name="my-collection", type_name="model")
+
+event = OnAddArtifactAlias(
+    scope=collection,
+    filter=ArtifactEvent.alias.eq("prod"),
+)
+```

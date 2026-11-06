@@ -1,0 +1,87 @@
+# Hugging Face Accelerate
+
+Source: https://docs.coreweave.com/products/wandb/integrations/accelerate
+
+> Training and inference at scale made simple, efficient, and adaptable
+
+# Hugging Face Accelerate
+
+Hugging Face Accelerate is a library that enables the same PyTorch code to run across any distributed configuration, to simplify model training and inference at scale.
+
+Accelerate includes a W\&B Tracker, which this page shows how to use to log metrics, configuration, and artifacts from distributed training runs to Weights & Biases. For more information, see [Accelerate Trackers in Hugging Face](https://huggingface.co/docs/accelerate/main/en/usage_guides/tracking).
+
+## Start logging with Accelerate
+
+This section shows how to configure Accelerate to log experiment data to Weights & Biases during training. To get started with Accelerate and Weights & Biases, follow this pseudocode:
+
+```python theme={"system"}
+from accelerate import Accelerator
+
+# Tell the Accelerator object to log with wandb
+accelerator = Accelerator(log_with="wandb")
+
+# Initialise your wandb run, passing wandb parameters and any config information
+accelerator.init_trackers(
+    project_name="my_project", 
+    config={"dropout": 0.1, "learning_rate": 1e-2},
+    init_kwargs={"wandb": {"entity": "my-wandb-team"}}
+    )
+
+...
+
+# Log to wandb by calling accelerator.log(); step is optional
+accelerator.log({"train_loss": 1.12, "valid_loss": 0.8}, step=global_step)
+
+
+# Make sure that the wandb tracker finishes correctly
+accelerator.end_training()
+```
+
+In more detail:
+
+1. Pass `log_with="wandb"` when you initialize the `Accelerator` class.
+2. Call the [`init_trackers`](https://huggingface.co/docs/accelerate/main/en/package_reference/accelerator#accelerate.Accelerator.init_trackers) method and pass it:
+   * A project name through `project_name`.
+   * Any parameters you want to pass to [`wandb.init()`](https://docs.coreweave.com/products/wandb/ref/python/functions/init) through a nested dict to `init_kwargs`.
+   * Any other experiment config information you want to log to your wandb run, through `config`.
+3. Use the `wandb.Run.log()` method to log to Weights & Biases. The `step` argument is optional.
+4. Call `.end_training()` when training finishes.
+
+## Access the W\&B tracker
+
+Once Accelerate logs to Weights & Biases, you may want direct access to the underlying W\&B run object to log artifacts, custom charts, or other data that the tracker doesn't expose. To access the W\&B tracker, use the `Accelerator.get_tracker()` method. Pass in the string corresponding to a tracker's `.name` attribute, which returns the tracker on the `main` process.
+
+```python theme={"system"}
+wandb_tracker = accelerator.get_tracker("wandb")
+
+```
+
+From there, you can interact with the `wandb` run object as usual:
+
+```python theme={"system"}
+wandb_tracker.log_artifact(some_artifact_to_log)
+```
+
+> [!WARNING]
+>
+> Trackers built in Accelerate automatically execute on the correct process, so if a tracker only needs to run on the main process it does so automatically.
+>
+> To remove Accelerate's wrapping entirely, you can achieve the same outcome with:
+>
+> ```python theme={"system"}
+> wandb_tracker = accelerator.get_tracker("wandb", unwrap=True)
+> with accelerator.on_main_process:
+>     wandb_tracker.log_artifact(some_artifact_to_log)
+> ```
+
+## Accelerate articles
+
+For a deeper walkthrough of using Accelerate with Weights & Biases, see the following article.
+
+<details>
+  <summary>HuggingFace Accelerate Super Charged With Weights & Biases</summary>
+
+  This article looks at what HuggingFace Accelerate offers and how to perform distributed training and evaluation while logging results to Weights & Biases.
+
+  Read the [Hugging Face Accelerate Super Charged with W\&B report](https://wandb.ai/gladiator/HF%20Accelerate%20+%20W\&B/reports/Hugging-Face-Accelerate-Super-Charged-with-Weights-Biases--VmlldzoyNzk3MDUx?utm_source=docs\&utm_medium=docs\&utm_campaign=accelerate-docs).
+</details>

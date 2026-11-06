@@ -1,0 +1,222 @@
+# Create an artifact version
+
+Source: https://docs.coreweave.com/products/wandb/artifacts/create-a-new-artifact-version
+
+> Create a new artifact version from a single run or from a distributed process.
+
+# Create an artifact version
+
+Create a new artifact version with a single [run](https://docs.coreweave.com/products/wandb/runs.md) or collaboratively with distributed runs. You can optionally create a new artifact version from a previous version known as an [incremental artifact](#create-a-new-artifact-version-from-an-existing-version).
+
+> [!NOTE]
+>
+> We recommend that you create an incremental artifact when you need to apply changes to a subset of files in an artifact, where the size of the original artifact is significantly larger.
+
+## Create new artifact versions from scratch
+
+There are two ways to create a new artifact version: from a single run and from distributed runs. They are defined as follows:
+
+* **Single run**: A single run provides all the data for a new version. This is the most common case and is best suited when the run fully recreates the needed data. For example: outputting saved models or model predictions in a table for analysis.
+* **Distributed runs**: A set of runs collectively provides all the data for a new version. This is best suited for distributed jobs which have multiple runs generating data, often in parallel. For example: evaluating a model in a distributed manner, and outputting the predictions.
+
+Weights & Biases will create a new artifact and assign it a `v0` alias if you pass a name to the `wandb.Artifact` API that does not exist in your project. Weights & Biases checksums the contents when you log again to the same artifact. If the artifact changed, Weights & Biases saves a new version `v1`.
+
+Weights & Biases will retrieve an existing artifact if you pass a name and artifact type to the `wandb.Artifact` API that matches an existing artifact in your project. The retrieved artifact will have a version greater than 1.
+
+![Artifact workflow comparison](https://mintcdn.com/coreweave-dbfa0e8d/3Dv_sw2eg8feUJlx/products/wandb/_media/single_distributed_artifacts.png?fit=max\&auto=format\&n=3Dv_sw2eg8feUJlx\&q=85\&s=282def1033e091eccfb804f02d7764e1)
+
+### Single run
+
+Log a new version of an Artifact with a single run that produces all the files in the artifact. This case occurs when a single run produces all the files in the artifact.
+
+Based on your use case, select one of the tabs below to create a new artifact version:
+
+> [!TIP]
+>
+> Use `wandb.Run.log_artifact()` to explicitly mark an artifact as an output of a run.
+>
+> Use `Artifact.save()` as a convenience method. If a run is active, Weights & Biases logs the artifact to that run. Otherwise, Weights & Biases creates an automatic run and logs it there.
+
+> [tab] Track as run output
+>
+> Use `wandb.Run.log_artifact()` to explicitly associate the artifact with a run:
+>
+> 1. Create a run with `wandb.init()`.
+> 2. Create a new artifact or retrieve an existing one with `wandb.Artifact`.
+> 3. Add files to the artifact with `wandb.Artifact.add_file()`.
+> 4. Log the artifact to the run with `wandb.Run.log_artifact()`.
+>
+> ```python theme={"system"}
+> with wandb.init() as run:
+>     artifact = wandb.Artifact("artifact_name", "artifact_type")
+>
+>     # Add Files and Assets to the artifact using
+>     # `.add`, `.add_file`, `.add_dir`, and `.add_reference`
+>     artifact.add_file("image1.png")
+>     run.log_artifact(artifact)
+> ```
+
+> [tab] Save directly
+>
+> Use `wandb.Artifact.save()` as a convenience method to persist the artifact from the current context:
+>
+> 1. Create a new artifact or retrieve an existing one with `wandb.Artifact`.
+> 2. Add files to the artifact with `wandb.Artifact.add_file()`.
+> 3. Save the artifact with `wandb.Artifact.save()`.
+>
+> ```python theme={"system"}
+> artifact = wandb.Artifact("artifact_name", "artifact_type")
+> # Add Files and Assets to the artifact using
+> # `.add`, `.add_file`, `.add_dir`, and `.add_reference`
+> artifact.add_file("image1.png")
+> artifact.save()
+> ```
+
+### Distributed runs
+
+Allow a collection of runs to collaborate on a version before committing it. This is in contrast to single run mode described above where one run provides all the data for a new version.
+
+> [!NOTE]
+>
+> 1. Each run in the collection needs to be aware of the same unique ID (called `distributed_id`) in order to collaborate on the same version. By default, if present, Weights & Biases uses the run's `group` as set by `wandb.init(group=GROUP)` as the `distributed_id`.
+> 2. There must be a final run that "commits" the version, permanently locking its state.
+> 3. Use `upsert_artifact` to add to the collaborative artifact and `finish_artifact` to finalize the commit.
+
+Consider the following example. Different runs (labelled below as **Run 1**, **Run 2**, and **Run 3**) add a different image file to the same artifact with `upsert_artifact`.
+
+#### Run 1
+
+```python theme={"system"}
+with wandb.init() as run:
+    artifact = wandb.Artifact("artifact_name", "artifact_type")
+    # Add Files and Assets to the artifact using
+    # `.add`, `.add_file`, `.add_dir`, and `.add_reference`
+    artifact.add_file("image1.png")
+    run.upsert_artifact(artifact, distributed_id="my_dist_artifact")
+```
+
+#### Run 2
+
+```python theme={"system"}
+with wandb.init() as run:
+    artifact = wandb.Artifact("artifact_name", "artifact_type")
+    # Add Files and Assets to the artifact using
+    # `.add`, `.add_file`, `.add_dir`, and `.add_reference`
+    artifact.add_file("image2.png")
+    run.upsert_artifact(artifact, distributed_id="my_dist_artifact")
+```
+
+#### Run 3
+
+Must run after Run 1 and Run 2 complete. The Run that calls `wandb.Run.finish_artifact()` can include files in the artifact, but does not need to.
+
+```python theme={"system"}
+with wandb.init() as run:
+    artifact = wandb.Artifact("artifact_name", "artifact_type")
+    # Add Files and Assets to the artifact
+    # `.add`, `.add_file`, `.add_dir`, and `.add_reference`
+    artifact.add_file("image3.png")
+    run.finish_artifact(artifact, distributed_id="my_dist_artifact")
+```
+
+## Create a new artifact version from an existing version
+
+Create a new artifact version by adding, modifying, or removing files from an existing artifact version. Weights & Biases re-indexes only the files that changed. The resulting version is known as an *incremental* artifact.
+
+![Incremental artifact versioning](https://mintcdn.com/coreweave-dbfa0e8d/3Dv_sw2eg8feUJlx/products/wandb/_media/incremental_artifacts.png?fit=max\&auto=format\&n=3Dv_sw2eg8feUJlx\&q=85\&s=ce6e5d53cde482d8deafb484ff24ad7b)
+
+To create an incremental artifact, create a *draft* from any previously committed artifact version. You can then modify the draft by using methods such as `Artifact.add_file()`, `Artifact.add_dir()`, and `Artifact.remove()`. For a complete list of methods, see the [`Artifact` reference documentation](https://docs.coreweave.com/products/wandb/ref/python/experiments/artifact).
+
+After you finish modifying the draft, log or save it to create a new artifact version.
+
+> [!NOTE]
+>
+> You can create a new artifact from scratch instead of creating an incremental artifact. However, this approach requires all artifact files to be available on your local disk. With an incremental artifact, you can add, remove, or modify individual files while reusing unchanged files from the previous artifact version.
+
+You can create an incremental artifact using a single run or across multiple runs that contribute to the new version. The following sections describe how to create an incremental artifact in each case.
+
+### Single run
+
+> [tab] Track as run input
+>
+> Use `wandb.Run.use_artifact()` when the current run consumes the artifact. Weights & Biases records the artifact as an input to the run.
+>
+> 1. Retrieve the artifact version with `wandb.Run.use_artifact()`.
+> 2. Create a draft with `Artifact.new_draft()`.
+> 3. Add, remove, or modify entries in the draft.
+> 4. Log the draft with `wandb.Run.log_artifact()` to create a new artifact version.
+>
+> ```python lines theme={"system"}
+> with wandb.init(job_type="modify dataset") as run:
+>     saved_artifact = run.use_artifact(
+>         "my_artifact:latest"
+>     )  # fetch artifact and input it into your run
+>     draft_artifact = saved_artifact.new_draft()  # create a draft version
+>
+>     # modify a subset of files in the draft version
+>     draft_artifact.add_file("file_to_add.txt")
+>     draft_artifact.remove("dir_to_remove/")
+>     run.log_artifact(
+>         draft_artifact
+>     )  # log your changes to create a new version and mark it as output to your run
+> ```
+
+> [tab] Fetch directly
+>
+> Use the Public API to retrieve an artifact without recording it as a run input.
+>
+> 1. Retrieve the artifact version with `wandb.Api.artifact()`.
+> 2. Create a draft with `Artifact.new_draft()`.
+> 3. Add, remove, or modify entries in the draft.
+> 4. Save the draft version with `Artifact.save()` to create a new artifact version.
+>
+> ```python theme={"system"}
+> client = wandb.Api()
+> saved_artifact = client.artifact("my_artifact:latest")  # load your artifact
+> draft_artifact = saved_artifact.new_draft()  # create a draft version
+>
+> # modify a subset of files in the draft version
+> draft_artifact.remove("deleted_file.txt")
+> draft_artifact.add_file("modified_file.txt")
+> draft_artifact.save()  # commit changes to the draft
+> ```
+
+### Distributed runs
+
+Use `Artifact.upsert_artifact()` and `Artifact.finish_artifact()` when multiple runs contribute files to one artifact version.
+
+The following example shows how to create a new artifact version from distributed runs in the case where the artifact is used as [an input to the runs](https://docs.coreweave.com/products/wandb/artifacts/create-a-new-artifact-version.md#use-as-run-input). The same approach applies when the artifact is [fetched directly](https://docs.coreweave.com/products/wandb/artifacts/create-a-new-artifact-version.md#fetch-directly) with the Public API.
+
+```python theme={"system"}
+import wandb
+
+project = "<project>"
+artifact_name = "<distributed-artifact-name>"
+distributed_id = "dataset-build-001"
+
+worker_files = [
+    ("data/shards/worker-0.txt", "shards/worker-0.txt"),
+    ("data/shards/worker-1.txt", "shards/worker-1.txt"),
+]
+
+for local_path, artifact_path in worker_files:
+    with wandb.init(project=project, group=distributed_id) as run:
+        artifact = wandb.Artifact(artifact_name, type="dataset")
+        artifact.add_file(local_path, name=artifact_path)
+        run.upsert_artifact(artifact, distributed_id=distributed_id)
+
+with wandb.init(project=project, group=distributed_id) as run:
+    artifact = wandb.Artifact(artifact_name, type="dataset")
+    logged = run.finish_artifact(
+        artifact,
+        aliases=["latest"],
+        distributed_id=distributed_id,
+    )
+    logged.wait()
+```
+
+> [!TIP]
+>
+> Use `Artifact.new_draft()` when you are modifying a committed artifact version.
+>
+> Use `Artifact.upsert_artifact()` and `Artifact.finish_artifact()` when multiple runs need to collaborate on one artifact version before it is finalized.

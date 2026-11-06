@@ -1,0 +1,317 @@
+# Tutorial: Set up W&B Launch on SageMaker
+
+Source: https://docs.coreweave.com/products/wandb/platform/launch/setup-launch-sagemaker
+
+# Tutorial: Set up W&B Launch on SageMaker
+
+> Configure W&B Launch to submit training jobs to Amazon SageMaker with ECR, S3, and IAM setup instructions.
+
+This tutorial shows ML engineers and platform administrators how to configure W\&B Launch to submit training jobs to Amazon SageMaker. By the end, you'll have the AWS resources, IAM roles, queue configuration, and Launch agent required to run SageMaker training jobs from Weights & Biases.
+
+You can use W\&B Launch to submit Launch jobs to Amazon SageMaker to train machine learning models using provided or custom algorithms on the SageMaker platform. SageMaker handles compute resource provisioning and release, so it can be a good choice for teams without an EKS cluster.
+
+A W\&B Launch queue connected to Amazon SageMaker runs Launch jobs as SageMaker Training Jobs with the [CreateTrainingJob API](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateTrainingJob.html). Use the Launch queue configuration to control arguments sent to the `CreateTrainingJob` API.
+
+Amazon SageMaker [uses Docker images to run training jobs](https://docs.aws.amazon.com/sagemaker/latest/dg/your-algorithms-training-algo-dockerfile.html). You must store images pulled by SageMaker in the Amazon Elastic Container Registry (ECR). This means you must store the image you use for training on ECR.
+
+> [!NOTE]
+>
+> This guide shows how to run SageMaker Training Jobs. For information about how to deploy models for inference on Amazon SageMaker, see [this example Launch job](https://github.com/wandb/launch-jobs/tree/main/jobs/deploy_to_sagemaker_endpoints).
+
+## Prerequisites
+
+Before you get started, you must satisfy the following prerequisites:
+
+* [Decide if you want the Launch agent to build a Docker image for you](#decide-if-you-want-the-launch-agent-to-build-a-docker-image).
+* [Set up AWS resources and gather information about S3, ECR, and SageMaker IAM roles](#set-up-aws-resources).
+* [Create an IAM role for the Launch agent](#create-an-iam-role-for-the-launch-agent).
+
+The following sections describe how to complete each prerequisite.
+
+### Decide if you want the Launch agent to build a Docker image
+
+Decide if you want the W\&B Launch agent to build a Docker image for you. You can choose from two options:
+
+* Permit the Launch agent to build a Docker image, push the image to Amazon ECR, and submit [SageMaker Training](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_CreateTrainingJob.html) jobs for you. This option can offer some simplicity to ML engineers who rapidly iterate over training code.
+* Use an existing Docker image that contains your training or inference scripts. This option works well with existing CI systems. If you choose this option, you must manually upload your Docker image to your container registry on Amazon ECR.
+
+### Set up AWS resources
+
+You must have the following AWS resources configured in your preferred AWS region:
+
+1. An [ECR repository](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-create.html) to store container images.
+2. One or more [S3 buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to store inputs and outputs for your SageMaker Training jobs.
+3. An IAM role for Amazon SageMaker that permits SageMaker to run training jobs and interact with Amazon ECR and Amazon S3.
+
+Record the ARNs for these resources. You need the ARNs when you define the [Launch queue configuration](#configure-launch-queue-for-sagemaker).
+
+### Create an IAM policy for the Launch agent
+
+The Launch agent requires an IAM policy that grants the permissions needed to submit SageMaker training jobs and, optionally, to push images to ECR. Complete the following steps to create the policy:
+
+1. From the IAM screen in AWS, create a new policy.
+
+2. Toggle to the JSON policy editor, then paste the following policy based on your use case. Substitute placeholders in `[BRACKETS]` with your own values:
+
+   > [tab] Agent submits pre-built Docker image
+   >
+   > ```json theme={"system"}
+   >   {
+   >     "Version": "2012-10-17",
+   >     "Statement": [
+   >       {
+   >         "Effect": "Allow",
+   >         "Action": [
+   >           "logs:DescribeLogStreams",
+   >           "SageMaker:AddTags",
+   >           "SageMaker:CreateTrainingJob",
+   >           "SageMaker:DescribeTrainingJob"
+   >         ],
+   >         "Resource": "arn:aws:sagemaker:[REGION]:[ACCOUNT-ID]:*"
+   >       },
+   >       {
+   >         "Effect": "Allow",
+   >         "Action": "iam:PassRole",
+   >         "Resource": "arn:aws:iam::[ACCOUNT-ID]:role/[ROLE-ARN-FROM-QUEUE-CONFIG]"
+   >       },
+   >     {
+   >         "Effect": "Allow",
+   >         "Action": "kms:CreateGrant",
+   >         "Resource": "[ARN-OF-KMS-KEY]",
+   >         "Condition": {
+   >           "StringEquals": {
+   >             "kms:ViaService": "SageMaker.[REGION].amazonaws.com",
+   >             "kms:GrantIsForAWSResource": "true"
+   >           }
+   >         }
+   >       }
+   >     ]
+   >   }
+   > ```
+
+   > [tab] Agent builds and submits Docker image
+   >
+   > ```json theme={"system"}
+   >   {
+   >     "Version": "2012-10-17",
+   >     "Statement": [
+   >       {
+   >         "Effect": "Allow",
+   >         "Action": [
+   >           "logs:DescribeLogStreams",
+   >           "SageMaker:AddTags",
+   >           "SageMaker:CreateTrainingJob",
+   >           "SageMaker:DescribeTrainingJob"
+   >         ],
+   >         "Resource": "arn:aws:sagemaker:[REGION]:[ACCOUNT-ID]:*"
+   >       },
+   >       {
+   >         "Effect": "Allow",
+   >         "Action": "iam:PassRole",
+   >         "Resource": "arn:aws:iam::[ACCOUNT-ID]:role/[ROLE-ARN-FROM-QUEUE-CONFIG]"
+   >       },
+   >        {
+   >       "Effect": "Allow",
+   >       "Action": [
+   >         "ecr:CreateRepository",
+   >         "ecr:UploadLayerPart",
+   >         "ecr:PutImage",
+   >         "ecr:CompleteLayerUpload",
+   >         "ecr:InitiateLayerUpload",
+   >         "ecr:DescribeRepositories",
+   >         "ecr:DescribeImages",
+   >         "ecr:BatchCheckLayerAvailability",
+   >         "ecr:BatchDeleteImage"
+   >       ],
+   >       "Resource": "arn:aws:ecr:[REGION]:[ACCOUNT-ID]:repository/[REPOSITORY]"
+   >     },
+   >     {
+   >       "Effect": "Allow",
+   >       "Action": "ecr:GetAuthorizationToken",
+   >       "Resource": "*"
+   >     },
+   >     {
+   >         "Effect": "Allow",
+   >         "Action": "kms:CreateGrant",
+   >         "Resource": "[ARN-OF-KMS-KEY]",
+   >         "Condition": {
+   >           "StringEquals": {
+   >             "kms:ViaService": "SageMaker.[REGION].amazonaws.com",
+   >             "kms:GrantIsForAWSResource": "true"
+   >           }
+   >         }
+   >       }
+   >     ]
+   >   }
+   > ```
+
+3. Click **Next**.
+
+4. Give the policy a name and description.
+
+5. Click **Create policy**.
+
+You now have an IAM policy that you can attach to the Launch agent role in the next section.
+
+### Create an IAM role for the Launch agent
+
+The Launch agent requires permission to create Amazon SageMaker training jobs. Attaching the policy you created in the preceding section to a dedicated role lets the agent assume those permissions at runtime. Follow the procedure to create an IAM role:
+
+1. From the IAM screen in AWS, create a new role.
+2. For **Trusted Entity**, select **AWS Account** (or another option that suits your organization's policies).
+3. Scroll through the permissions screen and select the policy name you created in the preceding section.
+4. Give the role a name and description.
+5. Select **Create role**.
+6. Record the ARN of the role. You specify the ARN when you set up the Launch agent.
+
+To create IAM roles, see the [AWS Identity and Access Management Documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html).
+
+> [!NOTE]
+>
+> * If you want the Launch agent to build images, see the [Advanced agent set up](https://docs.coreweave.com/products/wandb/platform/launch/setup-agent-advanced.md) for additional permissions required.
+> * The `kms:CreateGrant` permission for SageMaker queues is required only if the associated `ResourceConfig` has a specified `VolumeKmsKeyId` and the associated role doesn't have a policy that permits this action.
+
+## Configure the Launch queue for SageMaker
+
+With the AWS prerequisites in place, you can create the W\&B Launch queue that routes jobs to SageMaker. Create a queue in the W\&B App that uses SageMaker as its compute resource:
+
+1. Navigate to the [Launch App](https://forge.coreweave.com/wandb/launch).
+2. Click **Create Queue**.
+3. Select the **Entity** in which you want to create the queue.
+4. Provide a name for your queue in the **Name** field.
+5. Select **SageMaker** as the **Resource**.
+6. Within the **Configuration** field, provide information about your SageMaker job. By default, Weights & Biases populates a YAML and JSON `CreateTrainingJob` request body:
+
+   ```json theme={"system"}
+   {
+     "RoleArn": "[REQUIRED]", 
+     "ResourceConfig": {
+         "InstanceType": "ml.m4.xlarge",
+         "InstanceCount": 1,
+         "VolumeSizeInGB": 2
+     },
+     "OutputDataConfig": {
+         "S3OutputPath": "[REQUIRED]"
+     },
+     "StoppingCondition": {
+         "MaxRuntimeInSeconds": 3600
+     }
+   }
+   ```
+
+   You must at minimum specify:
+
+   * `RoleArn`: ARN of the SageMaker execution IAM role (see [prerequisites](#prerequisites)). Don't confuse this with the Launch **agent** IAM role.
+   * `OutputDataConfig.S3OutputPath`: An Amazon S3 URI that specifies where SageMaker stores outputs.
+   * `ResourceConfig`: Required specification of a resource config. For resource config options, see the [AWS `ResourceConfig` documentation](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_ResourceConfig.html).
+   * `StoppingCondition`: Required specification of the stopping conditions for the training job. For options, see the [AWS `StoppingCondition` documentation](https://docs.aws.amazon.com/sagemaker/latest/APIReference/API_StoppingCondition.html).
+7. Click **Create Queue**.
+
+Your queue is created and ready to receive jobs after you configure a Launch agent to poll it.
+
+## Set up the Launch agent
+
+The following sections describe where you can deploy your agent and how to configure your agent based on where you deploy it.
+
+You have [several options for how to deploy the Launch agent for an Amazon SageMaker](#decide-where-to-run-the-launch-agent) queue: on a local machine, on an EC2 instance, or in an EKS cluster. [Configure your Launch agent](#configure-a-launch-agent) based on where you deploy your agent.
+
+### Decide where to run the Launch agent
+
+For production workloads and for customers who already have an EKS cluster, Weights & Biases recommends that you deploy the Launch agent to the EKS cluster using this Helm chart.
+
+For production workloads without a current EKS cluster, an EC2 instance is a good option. Although the Launch agent instance keeps running all the time, the agent doesn't need more than a `t2.micro` sized EC2 instance, which is affordable.
+
+For experimental or solo use cases, you can run the Launch agent on your local machine as a fast way to get started.
+
+Based on your use case, follow the instructions in the following tabs to configure your Launch agent:
+
+> [tab] EKS
+>
+> Weights & Biases recommends that you use the [Weights & Biases managed Helm chart](https://github.com/wandb/helm-charts/tree/main/charts/launch-agent) to install the agent in an EKS cluster.
+
+> [tab] EC2
+>
+> Navigate to the Amazon EC2 Dashboard and complete the following steps:
+>
+> 1. Click **Launch instance**.
+> 2. Provide a name for the **Name** field. Optionally add a tag.
+> 3. From the **Instance type**, select an instance type for your EC2 container. You don't need more than 1 vCPU and 1 GiB of memory (for example, a `t2.micro`).
+> 4. Create a key pair for your organization within the **Key pair (login)** field. You use this key pair to [connect to your EC2 instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect.html) with SSH client at a later step.
+> 5. Within **Network settings**, select a security group for your organization.
+> 6. Expand **Advanced details**. For **IAM instance profile**, select the Launch agent IAM role you created in the preceding section.
+> 7. Review the **Summary** field. If correct, select **Launch instance**.
+>
+> Navigate to **Instances** within the left panel of the EC2 Dashboard on AWS. Ensure that the EC2 instance you created is running (see the **Instance state** column). After you confirm your EC2 instance is running, navigate to your local machine's terminal and complete the following:
+>
+> 1. Select **Connect**.
+> 2. Select the **SSH client** tab and follow the instructions to connect to your EC2 instance.
+> 3. Within your EC2 instance, install the following packages:
+>    ```bash theme={"system"}
+>    sudo yum install python311 -y && python3 -m ensurepip --upgrade && pip3 install wandb && pip3 install wandb[launch]
+>    ```
+> 4. Next, install and start Docker within your EC2 instance:
+>    ```bash theme={"system"}
+>    sudo yum update -y && \
+>    sudo yum install -y docker python3 && \
+>    sudo systemctl start docker && \
+>    sudo systemctl enable docker && \
+>    sudo usermod -a -G docker ec2-user
+>
+>    newgrp docker
+>    ```
+>
+> You can now set up the Launch agent config.
+
+> [tab] Local machine
+>
+> Use the AWS config files located at `~/.aws/config` and `~/.aws/credentials` to associate a role with an agent that polls on a local machine. Provide the IAM role ARN that you created for the Launch agent in the preceding step.
+>
+> ```yaml title="~/.aws/config" theme={"system"}
+> [profile SageMaker-agent]
+> role_arn = arn:aws:iam::[ACCOUNT-ID]:role/[AGENT-ROLE-NAME]
+> source_profile = default                                                                   
+> ```
+>
+> ```yaml title="~/.aws/credentials" theme={"system"}
+> [default]
+> aws_access_key_id=[ACCESS-KEY-ID]
+> aws_secret_access_key=[SECRET-ACCESS-KEY]
+> aws_session_token=[SESSION-TOKEN]
+> ```
+>
+> Session tokens have a [max length](https://docs.aws.amazon.com/cli/latest/reference/sts/get-session-token.html#description) of 1 hour or 3 days, depending on the associated principal.
+
+### Configure a Launch agent
+
+After you decide where to run the agent, configure it so that it can poll your SageMaker queue and authenticate to AWS. Configure the Launch agent with a YAML config file named `launch-config.yaml`.
+
+By default, Weights & Biases checks for the config file in `~/.config/wandb/launch-config.yaml`. You can optionally specify a different directory when you activate the Launch agent with the `-c` flag.
+
+The following YAML snippet demonstrates how to specify the core config agent options:
+
+```yaml title="launch-config.yaml" theme={"system"}
+max_jobs: -1
+queues:
+  - [QUEUE-NAME]
+environment:
+  type: aws
+  region: [YOUR-REGION]
+registry:
+  type: ecr
+  uri: [ECR-REPO-ARN]
+builder: 
+  type: docker
+
+```
+
+Now start the agent with `wandb launch-agent`.
+
+Your Launch agent is now running and polls the SageMaker queue for jobs.
+
+## Optional: Push your Launch job Docker image to Amazon ECR
+
+> [!NOTE]
+>
+> This section applies only if your Launch agent uses existing Docker images that contain your training or inference logic. [Your Launch agent supports two behavior options.](#decide-if-you-want-the-launch-agent-to-build-a-docker-image)
+
+Upload your Docker image that contains your Launch job to your Amazon ECR repo. Your Docker image must be in your ECR registry before you submit new Launch jobs if you use image-based jobs.

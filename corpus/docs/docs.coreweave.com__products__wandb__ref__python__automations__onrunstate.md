@@ -1,0 +1,50 @@
+# OnRunState
+
+Source: https://docs.coreweave.com/products/wandb/ref/python/automations/onrunstate
+
+# OnRunState
+
+[View source](https://github.com/wandb/wandb/blob/main/wandb/automations/events.py#L420)
+
+## Class wandb.automations.OnRunState
+
+A run state changes.
+
+```python theme={"system"}
+*,
+event_type: Literal[RUN_STATE] = RUN_STATE,
+scope: Annotated[Union[wandb.automations.scopes.ProjectScope, Annotated[wandb.automations.scopes.TeamScope | wandb.automations.scopes.OrgScope, BeforeValidator(func=<function parse_scope>, json_schema_input_type=PydanticUndefined), Discriminator(discriminator='entity_type', custom_error_type=None, custom_error_message=None, custom_error_context=None)]], BeforeValidator(func=<function parse_scope>, json_schema_input_type=PydanticUndefined), Discriminator(discriminator='typename__', custom_error_type=None, custom_error_message=None, custom_error_context=None)],
+filter: Annotated[wandb.automations.events.RunStateFilter, Json, BeforeValidator(func=<function ensure_json>, json_schema_input_type=PydanticUndefined), PlainSerializer(func=<function to_json>, return_type=PydanticUndefined, when_used='always')]
+```
+
+## Args
+
+**event\_type** `Literal`
+
+No description provided.
+
+**scope** `Annotated`
+
+The scope of the event: must be a project or a team/org entity.
+
+**filter** `Annotated`
+
+Run state condition(s) that must be satisfied for this event to trigger.
+
+## Examples
+
+Define an event that triggers for any run in project "my-project" when
+its state changes to "finished" (i.e. succeeded) or "failed":
+
+```python theme={"system"}
+from wandb import Api
+from wandb.automations import OnRunState
+
+api = Api()
+project = api.project(name="my-project")
+
+event = OnRunState(
+    scope=project,
+    filter=RunEvent.state.in_(["finished", "failed"]),
+)
+```
