@@ -1,0 +1,86 @@
+# Enable structured output
+
+Source: https://docs.coreweave.com/products/inference/serverless/response-settings/structured-output
+
+# Enable structured output
+
+> How to configure structured output in Serverless Inference responses
+
+Structured output constrains Serverless Inference responses to a specific JSON schema, ensuring that the model's response adheres to the fields and types you define. Use structured output when your application needs to parse model responses into known fields, such as for data extraction, form filling, or downstream processing.
+
+Structured output is similar to [JSON mode](https://docs.coreweave.com/products/inference/serverless/response-settings/json-mode.md), but also enforces the schema you specify. Use structured output instead of JSON mode when possible.
+
+To enable structured output, specify `json_schema` as the `response_format` type in the request. The following example extracts event details into a defined schema:
+
+> [tab] Python
+>
+> ```python theme={"system"}
+> import json
+> import openai
+>
+> client = openai.OpenAI(
+>     base_url='https://api.inference.wandb.ai/v1',
+>     api_key="[YOUR-API-KEY]",  # Create an API key at https://forge.coreweave.com/settings
+> )
+>
+> response = client.chat.completions.create(
+>     model="openai/gpt-oss-20b",
+>     messages=[
+>         {"role": "system", "content": "Extract the event information."},
+>         {"role": "user", "content": "Alice and Bob are going to a science fair on Friday."},
+>     ],
+>     response_format={
+>         "type": "json_schema",
+>         "json_schema": {
+>             "name": "CalendarEventResponse",
+>             "strict": True,
+>             "schema": {
+>                 "type": "object",
+>                 "properties": {
+>                     "name": {"type": "string"},
+>                     "date": {"type": "string"},
+>                     "participants": {"type": "array", "items": {"type": "string"}},
+>                 },
+>                 "required": ["name", "date", "participants"],
+>                 "additionalProperties": False,
+>             },
+>         },
+>     },
+> )
+>
+> content = response.choices[0].message.content
+> parsed = json.loads(content)
+> print(parsed)
+> ```
+
+> [tab] Bash
+>
+> ```bash theme={"system"}
+> curl https://api.inference.wandb.ai/v1/chat/completions \
+>   -H "Content-Type: application/json" \
+>   -H "Authorization: Bearer [YOUR-API-KEY]" \
+>   -d '{
+>     "model": "openai/gpt-oss-20b",
+>     "messages": [
+>         {"role": "system", "content": "Extract the event information."},
+>         {"role": "user", "content": "Alice and Bob are going to a science fair on Friday."},
+>     ],
+>     "response_format": {
+>         "type": "json_schema",
+>         "json_schema": {
+>             "name": "CalendarEventResponse",
+>             "strict": True,
+>             "schema": {
+>                 "type": "object",
+>                 "properties": {
+>                     "name": {"type": "string"},
+>                     "date": {"type": "string"},
+>                     "participants": {"type": "array", "items": {"type": "string"}},
+>                 },
+>                 "required": ["name", "date", "participants"],
+>                 "additionalProperties": False,
+>             },
+>         },
+>     },
+>   }'
+> ```

@@ -1,0 +1,49 @@
+# coreweave_object_storage_bucket_policy_document (Data source)
+
+Source: https://docs.coreweave.com/platform/terraform/data-sources/object_storage_bucket_policy_document
+
+# coreweave_object_storage_bucket_policy_document (Data source)
+
+> Terraform data source for generating type-safe JSON bucket access policies for CoreWeave Object Storage
+
+[Bucket access policies](https://docs.coreweave.com/products/storage/object-storage/auth-access/bucket-access/bucket-policies.md) allow you to define precise, S3-compatible access control for one bucket. They are evaluated after organization access policies. See [Manage Bucket Policies](https://docs.coreweave.com/products/storage/object-storage/auth-access/bucket-access/manage-bucket-policies.md#example-policies) for examples and further information. This data source provides a type-safe data structure for creating an S3-compatible JSON bucket policy.
+
+## Example usage
+
+```terraform theme={"system"}
+data "coreweave_object_storage_bucket_policy_document" "default" {
+  version = "2012-10-17"
+  statement {
+    sid      = "allow-all"
+    effect   = "Allow"
+    action   = ["s3:*"]
+    resource = ["arn:aws:s3:::*"]
+    principal = {
+      "CW" : ["*"]
+    }
+  }
+}
+```
+
+## Schema
+
+### Optional
+
+* `id` (String) An optional policy identifier
+* `statement` (Block List) The main policy element that defines the access rules for buckets and objects. Multiple statement blocks can be specified. (see [below for nested schema](#nestedblock--statement))
+* `version` (String) The policy version, e.g. `"2012-10-17"`
+
+### Read-Only
+
+* `json` (String) The rendered policy document as JSON
+
+### Nested Schema for `statement`
+
+Optional:
+
+* `action` (List of String) List of action strings, e.g. `["s3:PutObject"]`
+* `condition` (Map of Map of String) Map of condition operators to JSON expressions
+* `effect` (String) `Allow` or `Deny`
+* `principal` (Map of List of String) Map of principal types to identifiers. For CoreWeave principals, format each identifier as described in [bucket policies](https://docs.coreweave.com/products/storage/object-storage/auth-access/bucket-access/bucket-policies.md).
+* `resource` (List of String) List of resource ARNs, e.g. `["arn:aws:s3:::bucket/*"]`
+* `sid` (String) An optional statement identifier

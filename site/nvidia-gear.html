@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoreWeave Account — NVIDIA Gear</title>
+  <link rel="icon" type="image/png" href="assets/images/PAN-Color.png" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=1" />
+</head>
+<body>
+  <nav>
+    <img src="assets/images/PAN-Color.png" alt="Palo Alto Networks" class="logo" />
+    <a class="site-title" href="index.html">CoreWeave Account</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="security-stack.html">Security Stack</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="positioning.html">Firewall Positioning</a>
+      <a href="resources.html">Resources</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1>NVIDIA Gear</h1>
+      <p>What CoreWeave runs, where it runs, and the bandwidth numbers that size the firewalls.</p>
+    </div>
+
+    <div class="banner">
+      <span class="tag tag-confirmed">Confirmed</span> stated on a CoreWeave-owned page or doc &nbsp;
+      <span class="tag tag-reported">Reported</span> third-party or secondhand source &nbsp;
+      <span class="tag tag-inferred">Inferred</span> our reading, verify in discovery
+    </div>
+
+    <p class="section-label">GPU instances (General Access zones)</p>
+    <div class="card table-wrap" style="padding:8px 8px;margin-bottom:16px;">
+      <table class="scoreboard-table">
+        <thead>
+          <tr><th>Instance</th><th>US AZs</th><th>GPU fabric (east-west)</th><th>North-south NIC</th><th>Host CPU</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Vera Rubin NVL72</strong> <code>verarubin-4x-e</code><br /><span class="note">4&times; Rubin, up to 288 GB HBM4, NVLink 6</span></td>
+            <td>US-CENTRAL-09A (TX)</td>
+            <td><strong>Spectrum-X RoCE</strong>, ConnectX-9 SuperNICs, up to <strong>1,600 Gb/s per GPU</strong>, multi-plane and rail-optimized, on liquid-cooled SN6600-LD (102.4 Tb/s, Spectrum-6)</td>
+            <td>Dual-port 200GbE</td>
+            <td>2&times; Vera (88-core Arm)</td>
+          </tr>
+          <tr>
+            <td><strong>GB300 NVL72</strong> <code>gb300-4x</code> / <code>gb300-4x-e</code><br /><span class="note">4&times; Blackwell Ultra, 279 GB</span></td>
+            <td>US-CENTRAL-07A / 09A, US-WEST-01A and more. The <code>-e</code> variant is sold through sales.</td>
+            <td><strong>Quantum-X800 InfiniBand</strong>, or Spectrum-X RoCE with ConnectX-8 + BlueField-3. 800 Gbps.</td>
+            <td>Dual-port 200GbE</td>
+            <td>2&times; Grace</td>
+          </tr>
+          <tr>
+            <td><strong>B300</strong> <code>b300-8x</code><br /><span class="note">8&times; B300, 270 GB</span></td>
+            <td>US-CENTRAL-06A, US-EAST-13A, US-WEST-01A / 10A</td>
+            <td>Quantum-X800 <strong>XDR 800G</strong> per GPU, non-blocking (6.4 Tb/s per node)</td>
+            <td>Dual-port 200GbE</td>
+            <td>2&times; Xeon 6747P (Granite Rapids)</td>
+          </tr>
+          <tr>
+            <td><strong>GB200 NVL72</strong> <code>gb200-4x</code><br /><span class="note">4&times; GB200, 186 GB</span></td>
+            <td>US-EAST-01A / 02A / 08A / 13A, US-WEST-01A</td>
+            <td>Quantum-2 NDR 400 Gb/s InfiniBand</td>
+            <td>Dual-port 100GbE</td>
+            <td>2&times; Grace</td>
+          </tr>
+          <tr>
+            <td><strong>B200</strong> <code>b200-8x</code><br /><span class="note">8&times; B200, 180 GB</span></td>
+            <td>US-CENTRAL-07A, US-EAST-13A / 15A, US-WEST-09B</td>
+            <td>InfiniBand (NDR 400G per GPU = 3.2 Tb/s per node)</td>
+            <td>Dual-port 100GbE</td>
+            <td>Xeon 8562Y+ (Emerald Rapids)</td>
+          </tr>
+          <tr>
+            <td><strong>H200</strong> / <strong>H100</strong> <code>gd-8xh200ib</code> / <code>gd-8xh100ib</code></td>
+            <td>H200: US-EAST-01A / 02A / 04A / 08A, US-WEST-04A. H100: 10 AZs.</td>
+            <td>InfiniBand NDR 400G per GPU</td>
+            <td>Dual-port 100GbE</td>
+            <td>Xeon 8562Y+ / 8462Y+</td>
+          </tr>
+          <tr>
+            <td><strong>RTX PRO 6000</strong> <code>rtxp6000-8x</code><br /><span class="note">96 GB, PCIe</span></td>
+            <td>US-EAST-15A (VA)</td>
+            <td>None (no RDMA fabric)</td>
+            <td>Dual-port 100GbE</td>
+            <td>Xeon 8562Y+</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-bottom:40px;"><span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://docs.coreweave.com/platform/instances/gpu-instances" target="_blank" rel="noopener">GPU instances</a> <a class="src" href="https://docs.coreweave.com/platform/instances/nvl72" target="_blank" rel="noopener">NVL72</a> <a class="src" href="https://docs.coreweave.com/products/networking/hpc-interconnect/about-hpc-interconnect" target="_blank" rel="noopener">HPC Interconnect</a>. Dedicated Access zones (most of the fleet) aren't listed per instance. Per-GPU fabric speeds for B200 and H100/H200 come from the NVIDIA reference designs. <span class="tag tag-inferred">Inferred</span></p>
+
+    <div class="two-col" style="margin-bottom:40px;">
+      <div class="card">
+        <h2>The DPU is already spoken for</h2>
+        <div class="prose">
+          <ul>
+            <li>Every CKS node has a <strong>BlueField-3 DPU</strong> running Nimbus. It handles PXE bootstrapping, tenant VPC membership, L4/L7 policy, firewalling, encryption and VXLAN termination. <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://docs.coreweave.com/security/architecture" target="_blank" rel="noopener">docs</a></li>
+            <li>GB300 Spectrum-X nodes pair BlueField-3 with ConnectX-8 SuperNICs, and Vera Rubin moves to ConnectX-9. CoreWeave has publicly committed to <strong>BlueField-4</strong> (800 Gb/s, 6&times; the compute), built on DOCA, for "hardware-enforced tenant isolation". <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://www.coreweave.com/blog/powering-the-future-of-innovation-how-coreweave-is-advancing-ai-cloud-performance-with-bluefield-4" target="_blank" rel="noopener">BlueField-4</a></li>
+            <li><strong>For PANW:</strong> Prisma AIRS on BlueField is designed for roughly 1&ndash;5 Gbps per DPU (inference endpoints, not training). At CoreWeave it is a <strong>platform roadmap conversation with the Nimbus team</strong>, not a near-term SKU, and Cisco is having the same conversation. <span class="tag tag-inferred">Inferred</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Fabric choice is shifting toward Ethernet</h2>
+        <div class="prose">
+          <ul>
+            <li>The Vera Rubin fabric runs on <strong>NVIDIA Spectrum-X SN6600-LD</strong> liquid-cooled switches (64&times;1.6T ports, 16 per rack = 1.64 Pb/s), with a 1:1 non-blocking leaf-to-spine design. <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://www.coreweave.com/blog/liquid-cooled-switching-doubles-ai-network-bandwidth-per-rack" target="_blank" rel="noopener">blog</a> <a class="src" href="https://www.coreweave.com/blog/5-lessons-from-building-a-multi-plane-network-fabric-for-agentic-ai" target="_blank" rel="noopener">multi-plane</a></li>
+            <li>CoreWeave offers both <strong>Quantum InfiniBand</strong> (Quantum-2 and Quantum-X800, SHARP-compliant) and <strong>Spectrum-X RoCE</strong>. GB300 comes in either flavor, and Vera Rubin launches on Spectrum-X only. <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://docs.coreweave.com/products/networking/hpc-interconnect/about-hpc-interconnect" target="_blank" rel="noopener">docs</a></li>
+            <li>An Ethernet GPU fabric is still a <strong>back-end RDMA fabric</strong>. The same rule applies: no inline NGFW. Expect Cisco to pitch Nexus and Silicon One for front-end and storage networks. That is a switching sale, not a security one.</li>
+            <li>NVL72 racks are sold only as <strong>full racks of 18 nodes</strong>. At 2&times;200GbE per node, that is up to 7.2 Tb/s of north-south capacity per rack, which aggregates into the AZ edge that the firewalls size against.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-label">Firewall sizing math (north-south only)</p>
+    <div class="card" style="margin-bottom:40px;">
+      <div class="prose">
+        <ul>
+          <li><strong>Per AZ edge:</strong> the limit is uplink and peering capacity (N&times;400G Direct Connect plus internet transit), not GPU count. Ask for the AZ's edge port count and the 95th-percentile egress. A 1.6&ndash;3.2 Tb/s edge needs threat-prevention-on throughput at <strong>PA-7500 class</strong>. <span class="tag tag-inferred">Inferred</span></li>
+          <li><strong>Per dedicated block:</strong> large customers (OpenAI, Meta, Microsoft) bring their own security inside the tenancy, but the block's internet and interconnect edge is CoreWeave's. A <strong>PA-5580 HA pair</strong> (300 Gbps threat prevention) per block keeps blast radius and logs separated.</li>
+          <li><strong>Zone 0 / management:</strong> BMC, DPU (Nimbus) and switch management traffic is low-bandwidth but very high-consequence. <strong>PA-3440</strong> per hall.</li>
+        </ul>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Internal — Palo Alto Networks account research. Not for customer distribution.
+  </footer>
+</body>
+</html>

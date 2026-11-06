@@ -1,0 +1,63 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Every href="x.html" / src="assets/..." in site/ must point at a file that exists
+      - name: Check internal links
+        run: |
+          cd site
+          fail=0
+          refs=$(grep -ohE '(href|src)="[^"]+"' *.html | sed -E 's/^(href|src)="//; s/"$//' \
+            | grep -vE '^(https?:|mailto:|#)' | sed -E 's/[?#].*$//' | sort -u)
+          for ref in $refs; do
+            [ -e "$ref" ] || { echo "::error::broken link: $ref"; fail=1; }
+          done
+          exit $fail
+
+      # site/ is public: only web assets belong there (no CSV/JSON/PDF exports or corpus files)
+      - name: Check for data files in site/
+        run: |
+          bad=$(find site -type f ! -name '*.html' ! -name '*.css' ! -name '*.png' ! -name '*.svg' ! -name '*.jpg' ! -name '*.ico')
+          if [ -n "$bad" ]; then echo "::error::unexpected files in site/:"; echo "$bad"; exit 1; fi
+
+  deploy:
+    needs: check
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Publish only site/ — not corpus/, tools/, or .DS_Store files
+      - name: Assemble site
+        run: |
+          cp -r site _site
+          find _site -name .DS_Store -delete
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

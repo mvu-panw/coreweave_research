@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoreWeave Account — Home</title>
+  <link rel="icon" type="image/png" href="assets/images/PAN-Color.png" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=1" />
+</head>
+<body>
+  <nav>
+    <img src="assets/images/PAN-Color.png" alt="Palo Alto Networks" class="logo" />
+    <a class="site-title" href="index.html">CoreWeave Account</a>
+    <div class="nav-links">
+      <a href="security-stack.html">Security Stack</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="nvidia-gear.html">NVIDIA Gear</a>
+      <a href="positioning.html">Firewall Positioning</a>
+      <a href="resources.html">Resources</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1>CoreWeave</h1>
+      <p>"The Essential Cloud for AI". Account research and PANW positioning for technical enablement.</p>
+    </div>
+
+    <div class="card" style="margin-bottom:32px;">
+      <p style="font-weight:600;font-size:1.15rem;margin-bottom:14px;color:var(--cyan);">The 30-second version</p>
+      <div class="prose">
+        <ul>
+          <li><strong>Who:</strong> the largest US neocloud. CoreWeave is headquartered in Livingston, NJ, listed on Nasdaq (CRWV) since March 2025 and in the Nasdaq-100. Co-founder and CEO is Michael Intrator. CISO is Jim Higgins (since February 2025, ex-Snap and Block). <a class="src" href="https://www.roi-nj.com/2025/02/27/tech/coreweave-announces-new-chief-information-security-officer-jim-higgins/" target="_blank" rel="noopener">CISO</a></li>
+          <li><strong>Scale:</strong> Q2 2026 revenue was <strong>$2.58B</strong> (up 112% YoY), with $1.51B adjusted EBITDA (59%) and a $626M net loss driven by $640M of interest. Revenue backlog is about <strong>$104B</strong>, plus more than $25B of new commitments signed in early Q3. Active power is <strong>1.5 GW</strong>. Contracted power was about 3.7 GW at the end of Q2 and about 4.2 GW by August 11. <a class="src" href="https://investors.coreweave.com/news/news-details/2026/CoreWeave-Reports-Strong-Second-Quarter-2026-Results/default.aspx" target="_blank" rel="noopener">Q2 release</a> Q3 results are due <strong>November 10, 2026</strong>.</li>
+          <li><strong>Footprint:</strong> <strong>51 active data centers</strong> (8 added in 2026) on CoreWeave's own petabit-scale backbone, with multiple 400G links at every PoP and MACsec everywhere. Docs list 49 US availability zones across 20 states, plus Canada, the Nordics, Spain and the UK. APAC and Middle East PoPs come online from Q4 2026. <a class="src" href="https://www.coreweave.com/blog/coreweave-builds-the-first-global-backbone-network-purpose-built-for-ai" target="_blank" rel="noopener">backbone</a>  Most are "Dedicated Access" zones reserved for single large customers. Core Scientific alone bills CoreWeave for 485 MW across five campuses. <a href="architecture.html" class="src">Architecture &rarr;</a></li>
+          <li><strong>Incumbent security stack:</strong> <strong>Cisco</strong>, <strong>CrowdStrike</strong> and <strong>Teleport</strong> <span class="tag tag-account">Account team</span>. Public evidence backs all three. Cisco IOS is required in DC technician postings at 12+ sites, and Cisco is an investor. CrowdStrike Falcon ships on every CKS node by default and is also a go-to-market partner. Teleport is named for infrastructure access in security engineering postings. <a href="security-stack.html" class="src">Security Stack &rarr;</a></li>
+          <li><strong>Recommendation:</strong> don't open against CrowdStrike, and coexist with Teleport. Compete with Cisco where the security decisions are still open: the <strong>OT network</strong> (a brand-new standards role is hiring now), the <strong>DC and PoP internet edge</strong> (PA-7500 / PA-5580 against Cisco Secure Firewall), the <strong>Zone 0 management plane</strong> (PA-3440), and <strong>Prisma Access</strong> for field technicians. Add <strong>Cortex XSIAM</strong> on top of Falcon telemetry and <strong>CN-Series / Prisma AIRS</strong> as tenant-facing options. Nothing goes in the GPU fabric. <a href="positioning.html" class="src">details &rarr;</a></li>
+          <li><strong>Why now:</strong> CoreWeave plans $35&ndash;39B of 2026 capex and is adding about 500 MW per quarter, so every new campus is a fresh security design. Cisco is pushing its own firewall onto BlueField DPUs, the same DPUs CoreWeave runs its Nimbus control plane on. CoreWeave Federal is pursuing FedRAMP.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-bottom:40px;">
+      <div class="card">
+        <h2>Offerings</h2>
+        <div class="prose">
+          <ul>
+            <li><strong>CoreWeave Kubernetes Service (CKS):</strong> bare-metal Kubernetes with no hypervisor. Tenant isolation runs on a BlueField-3 DPU in every node. Also offered: <strong>SUNK</strong> (Slurm on Kubernetes, now "SUNK Anywhere"), <strong>Bare Metal as a Service</strong>, and AI Object Storage with LOTA caching. <a class="src" href="https://docs.coreweave.com/products/networking/nimbus" target="_blank" rel="noopener">Nimbus</a></li>
+            <li><strong>GPUs:</strong> GB300 NVL72 (InfiniBand or Spectrum-X), B300, B200, GB200 NVL72, H200, H100, RTX PRO 6000 and, first to market, <strong>Vera Rubin NVL72</strong>. <a href="nvidia-gear.html" class="src">NVIDIA Gear &rarr;</a></li>
+            <li><strong>Software layer:</strong> Weights &amp; Biases (acquired 2025), Mission Control (fleet ops, now with an agent), CoreWeave Forge, ARIA (an AI research agent) and Sandboxes for RL and agent tool use.</li>
+            <li><strong>Cross-cloud:</strong> <strong>CoreWeave Interconnect</strong> (private fiber to other hyperscalers, starting with Google Cloud), Direct Connect at 10/100/400G with MACsec, and Zero Egress Migration.</li>
+            <li><strong>Security products:</strong> CoreWeave IAM with SAML/OIDC federation and SCIM provisioning (Okta, Entra), Support Access Management, and <strong>Remote Key Encryption</strong> (customer-held keys via Vault or KMIP, "later this year"). <a class="src" href="https://www.coreweave.com/blog/bringing-enterprise-identity-and-key-control-to-ai-on-coreweave" target="_blank" rel="noopener">blog</a></li>
+            <li><strong>Trust:</strong> SOC 2, ISO 27001/27017/27018. <strong>CoreWeave Federal</strong> was launched in October 2025 and is pursuing FedRAMP; no authorization is listed yet. <a class="src" href="https://www.coreweave.com/news/coreweave-to-enter-the-u-s-federal-market" target="_blank" rel="noopener">Federal</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Business signals</h2>
+        <div class="prose">
+          <ul>
+            <li><strong>Customers:</strong> OpenAI, Meta and Microsoft anchor the backlog. Q2 2026 added Bentley, Caterpillar, Grammarly, Isomorphic Labs and Sunday Robotics, and expanded Cognition, Databricks, Hudson River Trading, Periodic Labs, Rescale and Runway. Anthropic signed a multi-year deal. <span class="tag tag-reported">Reported</span> <a class="src" href="https://thenextweb.com/news/coreweave-has-agreed-a-multi-year-gpu-cloud-deal-with-anthropic-to-power-claude-at-production-scale-its-second-major-ai-infrastructure-announcement-in-48-hours" target="_blank" rel="noopener">TNW</a></li>
+            <li><strong>Capital:</strong> a $3.1B delayed-draw term loan, more than $10B of unsecured debt and converts (including an inaugural Eurobond), and a <strong>$1B investment from Jane Street</strong>. Debt was about $35B at the end of Q2 <span class="tag tag-reported">Reported</span>, so cost per MW matters to every vendor. <a class="src" href="https://investors.coreweave.com/news/news-details/2026/CoreWeave-Reports-Strong-Second-Quarter-2026-Results/default.aspx" target="_blank" rel="noopener">Q2 release</a></li>
+            <li><strong>Guidance:</strong> 2026 revenue of $12.4&ndash;13.2B, capex of $35&ndash;39B, and a target of 8 GW+ active power by 2030. <span class="tag tag-reported">Reported</span></li>
+            <li><strong>Core Scientific:</strong> the $9B all-stock acquisition was voted down in October 2025. It remains CoreWeave's largest colo partner: 590 MW contracted, 485 MW billing at Q3 2026. <span class="tag tag-reported">Reported</span> <a class="src" href="https://finance.biggo.com/news/US_CORZ_2026-11-05" target="_blank" rel="noopener">CORZ Q3</a></li>
+            <li><strong>Security ecosystem:</strong> CrowdStrike is both a vendor and a partner. Since November 2025 CoreWeave offers Falcon to its customers and hosts CrowdStrike's SafeMind model compute. The CoreWeave Partner Network lists CrowdStrike, VAST Data, ClickHouse and Reflection, with <strong>no PANW listing</strong> found. <a class="src" href="https://ir.crowdstrike.com/news-releases/news-release-details/coreweave-partners-crowdstrike-secure-mission-critical-ai" target="_blank" rel="noopener">release</a></li>
+            <li><strong>International:</strong> Nordic and UK expansion, and India via AdaniConneX (240 MW planned in Navi Mumbai).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-label">Explore</p>
+    <div class="menu-grid">
+      <a href="security-stack.html" class="menu-card">
+        <div class="card-icon" style="background:none;width:72px;height:72px;">
+          <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="var(--cyan)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.4-7 10-4-1.6-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+        </div>
+        <span class="card-label">Security Stack</span>
+        <span class="card-sub">Cisco, CrowdStrike, Teleport and the rest</span>
+      </a>
+
+      <a href="architecture.html" class="menu-card">
+        <div class="card-icon" style="background:none;width:72px;height:72px;">
+          <img src="assets/images/Strata-Hybrid-dark.png" alt="Strata" style="width:100%;height:100%;object-fit:contain;" />
+        </div>
+        <span class="card-label">Architecture</span>
+        <span class="card-sub">Zones, DPU, fabric, regions, edges</span>
+      </a>
+
+      <a href="nvidia-gear.html" class="menu-card">
+        <div class="card-icon" style="background:none;width:72px;height:72px;">
+          <img src="assets/images/Prisma-AIRS-Hybrid-dark.svg" alt="Prisma AIRS" style="width:100%;height:100%;object-fit:contain;" />
+        </div>
+        <span class="card-label">NVIDIA Gear</span>
+        <span class="card-sub">GPUs, fabrics, DPUs, link speeds</span>
+      </a>
+
+      <a href="positioning.html" class="menu-card">
+        <div class="card-icon" style="background:none;width:72px;height:72px;">
+          <img src="assets/images/PAN-Color.png" alt="Palo Alto Networks" style="width:100%;height:100%;object-fit:contain;" />
+        </div>
+        <span class="card-label">Firewall Positioning</span>
+        <span class="card-sub">Models, talk track, discovery</span>
+      </a>
+
+      <a href="resources.html" class="menu-card">
+        <div class="card-icon" style="background:none;width:72px;height:72px;">
+          <img src="assets/images/Cortex-XSIAM-Hybrid.png" alt="Cortex XSIAM" style="width:100%;height:100%;object-fit:contain;" />
+        </div>
+        <span class="card-label">Resources</span>
+        <span class="card-sub">Docs, blog, news, careers, press</span>
+      </a>
+    </div>
+  </main>
+
+  <footer>
+    Internal — Palo Alto Networks account research. Not for customer distribution.
+  </footer>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoreWeave Account — Firewall Positioning</title>
+  <link rel="icon" type="image/png" href="assets/images/PAN-Color.png" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=1" />
+</head>
+<body>
+  <nav>
+    <img src="assets/images/PAN-Color.png" alt="Palo Alto Networks" class="logo" />
+    <a class="site-title" href="index.html">CoreWeave Account</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="security-stack.html">Security Stack</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="nvidia-gear.html">NVIDIA Gear</a>
+      <a href="resources.html">Resources</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1>Firewall Positioning</h1>
+      <p>Compete with Cisco on the network, complement CrowdStrike in the SOC, coexist with Teleport on access. Nothing goes in the GPU fabric.</p>
+    </div>
+
+    <div class="banner">
+      <strong>Incumbents: Cisco, CrowdStrike, Teleport</strong> <span class="tag tag-account">Account team</span>. CrowdStrike is built into the CKS product and is a two-way commercial partner, so treat it as off-limits for displacement. Teleport is the engineers' access plane. <strong>Cisco is the one we're actually competing with</strong>, and the openings are where CoreWeave is still writing standards: OT (a new standards role is hiring now), the perimeter of each new campus, and the Zone 0 management plane. <span class="tag tag-inferred">Inferred</span> <a href="security-stack.html" class="src">evidence &rarr;</a>
+    </div>
+
+    <p class="section-label">Recommendation by enforcement point</p>
+    <div class="card table-wrap" style="padding:8px 8px;margin-bottom:16px;">
+      <table class="scoreboard-table">
+        <thead>
+          <tr><th>Enforcement point</th><th>Recommend</th><th>Key numbers</th><th>Versus incumbent / why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Facility OT<br /><span class="note">BMS, EPMS, SCADA, cooling, power, physical security devices</span></td>
+            <td><strong>OT Security</strong> (+ Device Security for IoT) with <strong>rugged NGFW</strong> at the OT/IT boundary, under Strata Cloud Manager</td>
+            <td>&mdash;</td>
+            <td><strong>Lead here.</strong> The Senior Network Security Engineer (OT) role is "establishing standards" for OT segmentation, host isolation, traversal controls and remote connectivity. It's greenfield, so no Cisco standard exists yet. Many sites are colo (Core Scientific, Applied Digital, Galaxy and others), so the boundary between landlord OT and CoreWeave IT is where the risk sits. CoreWeave's own <strong>Valvey/Racky</strong> software can isolate racks and trigger emergency cooling shutdowns, and the October 2026 US-EAST-15A facility power incident shows that an OT event becomes a customer outage. <span class="tag tag-inferred">Inferred</span></td>
+          </tr>
+          <tr>
+            <td>Backbone PoPs and campus internet edge<br /><span class="note">Zone 2: transit, peering, Direct Connect, CoreWeave Interconnect. Every PoP has multiple 400G links.</span></td>
+            <td><strong>PA-7500</strong> chassis, HA, per PoP and per large campus</td>
+            <td>1,440 Gbps threat prevention and 1,500 Gbps FW per full system. 250 Gbps TP per DPC-A card. 8&times; QSFP-DD 400/100/40G per NPC.</td>
+            <td><strong>Against Cisco Secure Firewall 4200/9300.</strong> Make the comparison on threat-prevention-on throughput rather than firewall-only figures, and on one management plane. CoreWeave adds about 500 MW a quarter, and 7+ APAC and ME PoPs come online from Q4 2026, so adding cards as a site phases up avoids a forklift upgrade. MACsec protects links but doesn't inspect them, so NGFW and MACsec are complementary.</td>
+          </tr>
+          <tr>
+            <td>Dedicated customer blocks<br /><span class="note">Dedicated Access AZs (OpenAI, Meta, Microsoft and others)</span></td>
+            <td><strong>PA-5580</strong> HA pair per block<br /><span class="note">PA-5570 or PA-5560 for smaller blocks</span></td>
+            <td>Threat prevention (appmix, PAN-OS 12.1): 5560 180 / 5570 240 / <strong>5580 300 Gbps</strong>. FW 375 Gbps. <span class="tag tag-reported">400G QSFP-DD ports</span></td>
+            <td>Each anchor customer gets a dedicated, auditable edge with separate policy and logs. Contracts worth $104B+ in backlog will come with isolation-evidence requirements.</td>
+          </tr>
+          <tr>
+            <td>Zone 0: management plane<br /><span class="note">Nimbus/DPU mgmt, BMC, switch mgmt, CKS control plane</span></td>
+            <td><strong>PA-3440</strong> per hall or site</td>
+            <td>30.2 Gbps FW (appmix). TP figures in sources range from 11 to 18.8 Gbps.</td>
+            <td>Owning Nimbus means owning every tenant's isolation. App-ID on IPMI, Redfish, SSH and gNMI, plus User-ID tied to Okta or Entra, so that Teleport sessions are also <em>network</em>-constrained. This complements Teleport rather than replacing it.</td>
+          </tr>
+          <tr>
+            <td>SOC / detection</td>
+            <td><strong>Cortex XSIAM</strong></td>
+            <td>&mdash;</td>
+            <td><strong>Complement CrowdStrike.</strong> XSIAM ingests Falcon natively. CoreWeave is <em>building</em> its own SIEM ("operation of our SIEM as an infrastructure") and uses Splunk-style detection. Buying the SIEM frees that team, and adding NGFW, OT and DPU telemetry gives the GSOC and SOC one view. This is the best non-firewall wedge.</td>
+          </tr>
+          <tr>
+            <td>Field technicians, contractors, OT vendors<br /><span class="note">20+ DC sites, corporate offices in NJ, NY, CA, WA</span></td>
+            <td><strong>Prisma Access</strong> (ZTNA 2.0) + <strong>Prisma Access Browser</strong></td>
+            <td>&mdash;</td>
+            <td><strong>Coexist with Teleport.</strong> Teleport covers engineers reaching servers and clusters. Prisma Access covers everyone else, including unmanaged-device contractors through the browser, with inspection. Longer term, raise PANW identity security (CyberArk) for privileged-access consolidation. <span class="tag tag-inferred">Inferred</span></td>
+          </tr>
+          <tr>
+            <td>Out-of-band</td>
+            <td><strong>PA-415-5G</strong></td>
+            <td>1.5 Gbps FW, 0.8 Gbps TP, integrated 5G</td>
+            <td>One box per site for cellular OOB, managed in the same SCM tenant as everything else.</td>
+          </tr>
+          <tr>
+            <td>Tenant-facing (resell / Partner Network)</td>
+            <td><strong>CN-Series</strong> on CKS, <strong>Prisma AIRS</strong> (AI runtime and model security)</td>
+            <td>Software</td>
+            <td>CKS is bare-metal Kubernetes with no VMs, so the fit is CN-Series, not VM-Series. Enterprises moving regulated inference onto CoreWeave want L7 inspection and AI guardrails beyond Nimbus L4/L7 policy. CrowdStrike already has a Partner Network listing and a resale motion, and PANW should match it. <span class="tag tag-inferred">Inferred</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-bottom:40px;">Sources: <a class="src" href="https://cdn.blueally.com/paloguard/datasheets/pa-5500-series.pdf" target="_blank" rel="noopener">PA-5500 datasheet (mirror)</a> &middot; <a class="src" href="https://www.corporatearmor.com/wp-content/uploads/2025/05/pa-7500-ds.pdf" target="_blank" rel="noopener">PA-7500 datasheet (mirror)</a> &middot; <a class="src" href="https://www.paloaltonetworks.com/resources/datasheets/pa-3400-series" target="_blank" rel="noopener">PA-3400 datasheet</a> &middot; <a class="src" href="https://www.paloaltonetworks.com/blog/2026/01/support-nvidia-enterprise-ai-factory/" target="_blank" rel="noopener">PANW + NVIDIA AI Factory</a>. These are the same datasheet figures used for the Lambda and Nebius accounts. Several come from reseller-hosted PDFs, so confirm them against official PANW datasheets before quoting to the customer. Get current Cisco Secure Firewall threat-on numbers from the PANW competitive team rather than from Cisco marketing.</p>
+
+    <p class="section-label">Why not the alternatives</p>
+    <div class="two-col" style="margin-bottom:40px;">
+      <div class="card">
+        <h2>Replacing Nimbus or the DPU firewall</h2>
+        <div class="prose">
+          <p>CoreWeave built tenant isolation in-house on BlueField-3: Nimbus, EVPN Type-5, Cilium. It is the core of how they sell bare metal "without the need for virtual machines". Pitching an NGFW <em>instead</em> of it reads as not understanding their platform. Prisma AIRS on BlueField (roughly 1&ndash;5 Gbps per DPU) is a <strong>joint roadmap conversation for Vera Rubin and BlueField-4</strong>. Get there before Cisco's Hybrid Mesh Firewall-on-DPU pitch lands.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Anything in the GPU fabric</h2>
+        <div class="prose">
+          <p>CoreWeave runs non-blocking Quantum-X800 InfiniBand and Spectrum-X RoCE with SHARP and GPUDirect RDMA at 3.2&ndash;6.4 Tb/s per node. Nothing inline belongs there, whether it is InfiniBand or Ethernet. Say this first, unprompted. It shows we understand AI infrastructure and keeps the conversation on north-south, where we win.</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-label">Talk track</p>
+    <div class="stack">
+      <div class="card">
+        <h2>"Secure the AI factory around the fabric, not in it"</h2>
+        <div class="prose">
+          <ol>
+            <li><strong>"We never touch your GPU fabric or Nimbus."</strong> Every enforcement point is north-south, Zone 0, or OT. Tenant isolation stays exactly as you designed it.</li>
+            <li><strong>"Valvey can shut down a rack, so who can reach Valvey?"</strong> Software-defined cooling and power control is the highest-consequence system in the building. Segment it, baseline it, and log every command.</li>
+            <li><strong>"Your OT standard is being written now, so write it once."</strong> One OT and IoT visibility plus segmentation standard across 20+ sites and several landlords, managed from one console, with remote vendor access through Prisma Access instead of ad hoc VPNs.</li>
+            <li><strong>"Threat prevention on, at 400G."</strong> PA-7500 and PA-5500 sized on threat-on throughput at the AZ edge. Ask Cisco for the same number with IPS, URL and DNS security enabled.</li>
+            <li><strong>"Keep Falcon. Stop building a SIEM."</strong> XSIAM ingests CrowdStrike natively and adds network, OT and DPU telemetry. Your detection engineers write detections instead of running data pipelines.</li>
+            <li><strong>"Keep Teleport. Cover everyone it doesn't."</strong> Contractors, DC technicians and OT vendors get ZTNA 2.0 and Prisma Access Browser. Zone 0 firewalls make Teleport sessions network-constrained as well as identity-constrained.</li>
+            <li><strong>"Sell security, don't just buy it."</strong> CrowdStrike is in your Partner Network. CN-Series and Prisma AIRS give your regulated and federal tenants L7 and AI-runtime security that Nimbus doesn't provide.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <h2>Objection handling</h2>
+          <div class="prose">
+            <ul>
+              <li><strong>"Cisco is an investor and our network vendor."</strong> Cisco IOS in technician postings means switching and routing, not a security standard. Security is a separate decision with a separate owner (the CISO organization). Investment doesn't require standardizing on a vendor, and the OT and Zone 0 decisions are still open.</li>
+              <li><strong>"Cisco's firewall runs on BlueField now."</strong> On a DPU that Nimbus already owns? Ask who would run it and how it would coexist with Nimbus firewalling and VXLAN termination. A DPU firewall also doesn't cover OT, the campus edge or field access.</li>
+              <li><strong>"Firewalls slow down training."</strong> Agreed, which is why none go in the training path. We size only the internet, peering and interconnect edge, at line rate with threat prevention on.</li>
+              <li><strong>"CrowdStrike already does this."</strong> Falcon protects hosts and cloud workloads. It doesn't segment a BMS network, inspect 400G of edge traffic, or give a contractor least-privilege access. We integrate with Falcon. We don't replace it.</li>
+              <li><strong>"Teleport is our zero trust."</strong> For engineers, yes. Zero trust for the network (Zone 0 segmentation), for OT vendors and for unmanaged contractors is a different control.</li>
+              <li><strong>"The landlord owns OT at colo sites."</strong> CoreWeave owns the liability when a facility event takes down a customer AZ. Push the OT standard into colo contracts and monitor the boundary.</li>
+              <li><strong>"Federal needs something different."</strong> CoreWeave Federal is pursuing FedRAMP and hiring for NIPR/SIPR, STIG and FIPS work. PANW brings FedRAMP High authorized Prisma Access and FIPS-mode PAN-OS. Bring in the PANW federal team.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Discovery questions</h2>
+          <div class="prose">
+            <ol>
+              <li>Which Cisco security products run today (Secure Firewall/FTD, ASA, FMC, ISE, Duo, Umbrella), and where: DC edge, PoPs, corporate? When is the next refresh?</li>
+              <li>Who makes the backbone edge routers at the PoPs? Is anything inspected between transit or peering and the backbone today?</li>
+              <li>What does the AZ edge look like per campus? How many 400G ports, what transit and peering, and is any inspection on today?</li>
+              <li>Who owns the new OT security standard, and when is it due? Which sites are CoreWeave-operated, and which are landlord-operated?</li>
+              <li>How are Zone 0 networks (Nimbus/DPU, BMC, switch management) segmented and monitored today? Where do Teleport sessions land?</li>
+              <li>How do DC technicians, contractors and OT vendors get remote access today? Is it on Teleport, a VPN, or something else?</li>
+              <li>What is the plan for the in-house SIEM? How much Falcon, Wiz and network data goes into it, and who runs the pipelines?</li>
+              <li>Do Dedicated Access customers contractually require a separate edge, separate logs or isolation evidence?</li>
+              <li>Is there tenant demand for L7 inspection or AI guardrails beyond Nimbus policies? Who owns the Partner Network security category?</li>
+              <li>What is the BlueField-4 / Vera Rubin plan for Nimbus? Is CoreWeave evaluating any third-party services on the DPU, including Cisco's?</li>
+              <li>What does CoreWeave Federal require for FedRAMP (impact level, boundary), and which vendors are in scope?</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Internal — Palo Alto Networks account research. Not for customer distribution.
+  </footer>
+</body>
+</html>

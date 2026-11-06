@@ -1,0 +1,83 @@
+# Call tools
+
+Source: https://docs.coreweave.com/products/inference/serverless/response-settings/tool-calling
+
+# Call tools
+
+> Use function and tool calling with Serverless Inference to let models invoke external tools and APIs during generation.
+
+Tool calling extends a model's capabilities to include invoking tools as part of its response. This lets the model fetch live data, trigger actions in your application, or otherwise reach beyond its training data to fulfill a request. Serverless Inference only supports calling functions.
+
+To call functions, specify them and their arguments as part of your request to the model. The model decides whether to run a function to answer the prompt, and if so, supplies the argument values.
+
+The following example defines a `get_weather` function and asks the model a question that requires invoking it.
+
+> [tab] Python
+>
+> ```python theme={"system"}
+> import openai
+>
+> client = openai.OpenAI(
+>     base_url='https://api.inference.wandb.ai/v1',
+>     api_key="[YOUR-API-KEY]",  # Create an API key at https://forge.coreweave.com/settings
+> )
+>
+> response = client.chat.completions.create(
+>     model="openai/gpt-oss-20b",
+>     messages=[
+>         {"role": "user", "content": "What is the weather like in San Francisco? Use Fahrenheit."},
+>     ],
+>     tool_choice="auto",
+>     tools=[
+>         {
+>             "type": "function",
+>             "function": {
+>                 "name": "get_weather",
+>                 "description": "Get the current weather in a given location",
+>                 "parameters": {
+>                     "type": "object",
+>                     "properties": {
+>                         "location": {"type": "string", "description": "City and state, e.g., 'San Francisco, CA'"},
+>                         "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+>                     },
+>                     "required": ["location", "unit"],
+>                 },
+>             },
+>         }
+>     ],
+> )
+>
+> print(response.choices[0].message.tool_calls)
+> ```
+
+> [tab] Bash
+>
+> ```bash theme={"system"}
+> curl https://api.inference.wandb.ai/v1/chat/completions \
+>   -H "Content-Type: application/json" \
+>   -H "Authorization: Bearer [YOUR-API-KEY]" \
+>   -d '{
+>     "model": "openai/gpt-oss-20b",
+>         "messages": [
+>             {"role": "user", "content": "What is the weather like in San Francisco? Use Fahrenheit."},
+>         ],
+>         "tool_choice": "auto",
+>         "tools": [
+>             {
+>                 "type": "function",
+>                 "function": {
+>                     "name": "get_weather",
+>                     "description": "Get the current weather in a given location",
+>                     "parameters": {
+>                         "type": "object",
+>                         "properties": {
+>                             "location": {"type": "string", "description": "City and state, e.g., 'San Francisco, CA'"},
+>                             "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]},
+>                         },
+>                         "required": ["location", "unit"],
+>                     },
+>                 },
+>             }
+>         ],
+>   }'
+> ```

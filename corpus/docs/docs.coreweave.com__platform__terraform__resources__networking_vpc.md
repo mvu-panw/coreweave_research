@@ -1,0 +1,180 @@
+# coreweave_networking_vpc (Resource)
+
+Source: https://docs.coreweave.com/platform/terraform/resources/networking_vpc
+
+# coreweave_networking_vpc (Resource)
+
+> Terraform resource for creating and managing CoreWeave VPCs with host prefixes and IPAM configuration
+
+Create and manage VPCs. Learn more about [CoreWeave VPCs](https://docs.coreweave.com/products/networking/vpc/about-vpcs.md).
+
+## Example usage
+
+```terraform theme={"system"}
+resource "coreweave_networking_vpc" "example" {
+  name = "default"
+  zone = "US-EAST-04A"
+
+  host_prefixes = [
+    {
+      name = "primary"
+      type = "PRIMARY"
+      prefixes = [
+        "10.16.192.0/18",
+        "2601:db8:aaaa::/48",
+      ]
+    },
+    {
+      name = "container-network"
+      type = "ROUTED"
+      prefixes = [
+        "2601:db8:bbbb::/48"
+      ]
+      ipam = {
+        prefix_length          = 80
+        gateway_address_policy = "FIRST_IP" # Other options available, see docs for details
+      }
+    },
+    {
+      name = "attached-network"
+      type = "ATTACHED"
+      prefixes = [
+        "2601:db8:cccc::/48"
+      ]
+      ipam = {
+        prefix_length = 64
+      }
+    },
+  ]
+
+  # Existing untyped prefixes can remain untyped. Type changes require VPC API support.
+  # For a new VPC, these prefixes may use POD, SERVICE, and LOAD_BALANCER types.
+  vpc_prefixes = [
+    {
+      name  = "pod cidr"
+      value = "10.0.0.0/13"
+    },
+    {
+      name  = "service cidr"
+      value = "10.16.0.0/22"
+    },
+    {
+      name  = "internal lb cidr"
+      value = "10.32.4.0/22"
+    },
+    {
+      name  = "private-access"
+      value = "10.48.0.0/24"
+      type  = "PRIVATE_ACCESS"
+    },
+  ]
+
+  egress = {
+    disable_public_access = false
+  }
+
+  ingress = {
+    disable_public_services = false
+  }
+
+  dhcp = {
+    dns = {
+      servers        = ["1.1.1.1", "8.8.8.8"]
+      search_domains = ["example.com", "corp.internal"]
+    }
+  }
+}
+```
+
+## Schema
+
+### Required
+
+* `name` (String) The name of the VPC. Must not be longer than 30 characters.
+* `zone` (String) The Availability Zone in which the VPC is located.
+
+### Optional
+
+* `dhcp` (Attributes) Settings affecting DHCP behavior within the VPC. (see [below for nested schema](#nestedatt--dhcp))
+* `egress` (Attributes) Settings affecting traffic leaving the VPC. (see [below for nested schema](#nestedatt--egress))
+* `host_prefix` (String, Deprecated) An IPv4 CIDR range used to allocate host addresses when booting compute into a VPC. For SUNK clusters, use a prefix no smaller than your Zone's default host prefix (a mask no longer than the default) so that host addresses reflect each node's physical location. SUNK uses this location information to place network-adjacent nodes together, which improves distributed-training performance. A prefix smaller than the Zone default (a longer mask) doesn't carry this location information, so it produces less optimal placement. If you need a different size, CoreWeave can approve one for your account on request. For non-SUNK VPCs, any prefix size is accepted. However, NVL72 rack-level instances require a host prefix no smaller than the Zone's default host prefix. A smaller prefix forces dynamic address allocation, which breaks standard IMEX address mapping across the cluster. IMEX with Dynamic Resource Allocation (DRA) doesn't have this limitation. If left unspecified, a Zone-specific default value will be applied by the server. See [Host prefixes](https://docs.coreweave.com/products/networking/vpc/create-manage-vpcs.md#host-prefixes) for details. This field is immutable once set.
+* `host_prefixes` (Attributes Set) The IPv4 or IPv6 CIDR ranges used to allocate host addresses when booting compute into a VPC. For SUNK clusters, use an IPv4 prefix no smaller than your Zone's default host prefix (a mask no longer than the default) so that host addresses reflect each node's physical location. SUNK uses this location information to place network-adjacent nodes together, which improves distributed-training performance. A prefix smaller than the Zone default (a longer mask) doesn't carry this location information, so it produces less optimal placement. If you need a different size, CoreWeave can approve one for your account on request. For non-SUNK VPCs, any prefix size is accepted. However, NVL72 rack-level instances require a primary host prefix (`type = PRIMARY`) no smaller than the Zone's default host prefix. A smaller prefix forces dynamic address allocation, which breaks standard IMEX address mapping across the cluster. IMEX with Dynamic Resource Allocation (DRA) doesn't have this limitation. See [Host prefixes](https://docs.coreweave.com/products/networking/vpc/create-manage-vpcs.md#host-prefixes) for details. (see [below for nested schema](#nestedatt--host_prefixes))
+* `ingress` (Attributes) Settings affecting traffic entering the VPC. (see [below for nested schema](#nestedatt--ingress))
+* `vpc_prefixes` (Attributes Set) A list of additional prefixes associated with the VPC. For example, CKS clusters use these prefixes for Pod and service CIDR ranges. (see [below for nested schema](#nestedatt--vpc_prefixes))
+
+### Read-Only
+
+* `id` (String) The unique identifier for the VPC.
+
+### Nested Schema for `dhcp`
+
+Optional:
+
+* `dns` (Attributes) Settings affecting DNS for DHCP within the VPC (see [below for nested schema](#nestedatt--dhcp--dns))
+
+### Nested Schema for `dhcp.dns`
+
+Optional:
+
+* `search_domains` (List of String) The DNS search domains to be used by DHCP clients within the VPC, in order of resolution precedence. Each entry must be a unique, valid DNS name (RFC 1123) of at most 253 characters with no trailing dot, and at most 100 may be specified.
+* `servers` (Set of String) The DNS servers to be used by DHCP clients within the VPC.
+
+### Nested Schema for `egress`
+
+Optional:
+
+* `disable_public_access` (Boolean) Specifies whether the VPC should be blocked from consuming public Internet.
+
+### Nested Schema for `host_prefixes`
+
+Required:
+
+* `name` (String) The user-specified name of the host prefix.
+* `prefixes` (List of String) The VPC-wide aggregates from which host-specific prefixes are allocated. May be IPv4 or IPv6.
+* `type` (String) Controls network connectivity from the prefix to the host. Must be one of: `PRIMARY`, `ROUTED`, `ATTACHED`.
+
+Optional:
+
+* `ipam` (Attributes) The configuration for a secondary host prefix. (see [below for nested schema](#nestedatt--host_prefixes--ipam))
+
+### Nested Schema for `host_prefixes.ipam`
+
+Required:
+
+* `prefix_length` (Number) The desired length for each Node's allocation from the VPC-wide aggregate prefix.
+
+Optional:
+
+* `gateway_address_policy` (String) Describes which IP address from the prefix is allocated to the network gateway. Must be one of: `UNSPECIFIED`, `EUI64`, `FIRST_IP`, `LAST_IP`.
+
+### Nested Schema for `ingress`
+
+Optional:
+
+* `disable_public_services` (Boolean) Specifies whether the VPC should prevent public prefixes advertised from Nodes from being imported into public-facing networks, making them inaccessible from the Internet.
+
+### Nested Schema for `vpc_prefixes`
+
+Required:
+
+* `name` (String)
+* `value` (String)
+
+Optional:
+
+* `type` (String) The intended use of the prefix. Must be one of: `PRIVATE_ACCESS`, `POD`, `SERVICE`, `LOAD_BALANCER`. Omit this attribute instead of setting `UNSPECIFIED`. When omitted on creation, the prefix has no type; when omitted on update, its existing type is preserved, including an untyped value, so unrelated changes do not invalidate references filtered by type. Prefix type changes are submitted as in-place updates and validated by the VPC API. Unsupported changes return an error during apply; they do not automatically replace the VPC. To change an immutable type, remove the prefix and apply, then re-add it with the new type and apply again. First remove any dependencies that prevent deleting the prefix; this can disrupt workloads using it.
+
+## Import
+
+Import is supported using the following syntax:
+
+```bash theme={"system"}
+terraform import coreweave_networking_vpc.default {{id}}
+```
+
+```terraform theme={"system"}
+import {
+  to = coreweave_networking_vpc.default
+  id = "{{id}}"
+}
+```

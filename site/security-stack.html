@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoreWeave Account — Security Stack</title>
+  <link rel="icon" type="image/png" href="assets/images/PAN-Color.png" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=1" />
+</head>
+<body>
+  <nav>
+    <img src="assets/images/PAN-Color.png" alt="Palo Alto Networks" class="logo" />
+    <a class="site-title" href="index.html">CoreWeave Account</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="nvidia-gear.html">NVIDIA Gear</a>
+      <a href="positioning.html">Firewall Positioning</a>
+      <a href="resources.html">Resources</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1>Security Stack</h1>
+      <p>Who CoreWeave already buys security from, how deep each vendor is, and where PANW competes, coexists or complements.</p>
+    </div>
+
+    <div class="banner">
+      <span class="tag tag-account">Account team</span> told to us by the PANW account team, not on a public page &nbsp;
+      <span class="tag tag-confirmed">Confirmed</span> stated on a CoreWeave-owned page, doc or job posting &nbsp;
+      <span class="tag tag-reported">Reported</span> third-party or secondhand source &nbsp;
+      <span class="tag tag-inferred">Inferred</span> our reading, verify in discovery
+    </div>
+
+    <p class="section-label">The three named incumbents</p>
+    <div class="vendor-grid">
+      <div class="card">
+        <h2>Cisco <span class="tag tag-account">Account team</span></h2>
+        <div class="prose">
+          <p><strong>What we can see publicly:</strong></p>
+          <ul>
+            <li><strong>Network operations run on Cisco and Juniper.</strong> "Cisco IOS and/or Juniper JunOS" is a listed requirement in Data Center Technician and Manager postings at Cheyenne WY, Plano TX, Afton TX, Chester VA, Dalton GA, Douglasville GA, Elk Grove IL, Ellendale ND, Marble NC, Miami FL and Sandusky OH. <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://coreweave.com/careers/job?4712375006&amp;board=coreweave&amp;gh_jid=4712375006" target="_blank" rel="noopener">example</a></li>
+            <li><strong>Cisco is a CoreWeave shareholder.</strong> It joined the $650M secondary share sale in late 2024 at a reported $23B valuation. <span class="tag tag-reported">Reported</span> <a class="src" href="https://www.theregister.com/2024/10/06/cisco_ai_coreweave/" target="_blank" rel="noopener">Register</a></li>
+            <li>CoreWeave's physical-security WIDS platform (Bastille) is integrated with "Axis, Splunk, <strong>Cisco</strong>, and Lenel". <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://coreweave.com/careers/job?4711313006&amp;board=coreweave&amp;gh_jid=4711313006" target="_blank" rel="noopener">job</a></li>
+          </ul>
+          <p><strong>What we don't know:</strong> which Cisco <em>security</em> products are deployed: Secure Firewall (FTD/ASA), Firewall Management Center, ISE, Duo, Umbrella or Secure Access. No public posting names one. The tenant fabric is NVIDIA DPU and EVPN, not Cisco, so the Cisco firewalls most likely sit at the DC and PoP edge and in corporate. <span class="tag tag-inferred">Inferred</span></p>
+          <p><strong>Watch:</strong> Cisco's Hybrid Mesh Firewall now extends into <strong>NVIDIA BlueField DPUs</strong> under "Cisco Secure AI Factory with NVIDIA". CoreWeave's own Nimbus software already owns those DPUs. <span class="tag tag-reported">Reported</span> <a class="src" href="https://www.techzine.eu/blogs/infrastructure/139649/cisco-and-nvidia-lower-the-barrier-to-secure-full-stack-ai-infrastructure" target="_blank" rel="noopener">Techzine</a></p>
+          <p><strong>PANW stance: compete.</strong> Lead with threat-prevention-on throughput at the edge and with greenfield OT. <a href="positioning.html" class="src">positioning &rarr;</a></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>CrowdStrike <span class="tag tag-account">Account team</span></h2>
+        <div class="prose">
+          <p><strong>Deepest-entrenched vendor on the list.</strong></p>
+          <ul>
+            <li><strong>Built into the product:</strong> "CKS clusters include CrowdStrike by default for endpoint protection." <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://docs.coreweave.com/security/architecture" target="_blank" rel="noopener">security architecture</a></li>
+            <li><strong>Customer since at least 2023:</strong> the Falcon sensor runs on every Kubernetes node, alongside Falcon Cloud Security, Insight (EDR), OverWatch and Spotlight. The case study cites zero performance impact in the PoC. <span class="tag tag-reported">Reported</span> <a class="src" href="https://www.crowdstrike.com/blog/how-coreweave-secures-cloud-with-crowdstrike/" target="_blank" rel="noopener">case study</a></li>
+            <li><strong>Partner and customer both ways (November 2025):</strong> CoreWeave offers Falcon Cloud Security, OverWatch and Falcon Complete MDR to its own tenants, and CoreWeave hosts training and inference for CrowdStrike's SafeMind models. CrowdStrike is also a featured member of the CoreWeave Partner Network. <a class="src" href="https://ir.crowdstrike.com/news-releases/news-release-details/coreweave-partners-crowdstrike-secure-mission-critical-ai" target="_blank" rel="noopener">release</a></li>
+            <li>Vulnerability management postings list "Wiz, Rapid7, <strong>CrowdStrike</strong>" together with Tines and Jira. <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://coreweave.com/careers/job?4719176006&amp;board=coreweave&amp;gh_jid=4719176006" target="_blank" rel="noopener">job</a></li>
+            <li>Gap: <strong>Bare Metal as a Service</strong> nodes get "no CoreWeave in-band agent", so there is no Falcon by default on BMaaS. <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://docs.coreweave.com/platform/instances/bare-metal-as-a-service" target="_blank" rel="noopener">BMaaS</a></li>
+          </ul>
+          <p><strong>PANW stance: don't attack the endpoint.</strong> CrowdStrike is a revenue partner and a customer of CoreWeave, so an EDR displacement fight would be political and unwinnable now. Complement it instead: put Cortex XSIAM over Falcon telemetry plus network and DPU data, and fill the network layer Falcon doesn't cover. <span class="tag tag-inferred">Inferred</span></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Teleport <span class="tag tag-account">Account team</span></h2>
+        <div class="prose">
+          <ul>
+            <li><strong>Infrastructure access plane for engineers:</strong> Senior Security Production Engineer postings require "experience managing and operating <strong>Teleport</strong> for infrastructure access control". <span class="tag tag-reported">Reported</span> <a class="src" href="https://startup.jobs/senior-security-production-engineer-coreweave-2-6770601" target="_blank" rel="noopener">posting (mirror)</a></li>
+            <li>Infrastructure Security postings describe "just-in-time access systems and zero-trust infrastructure", which matches Teleport's role: certificate-based SSH, Kubernetes, database and app access with session recording. <span class="tag tag-reported">Reported</span> <a class="src" href="https://builtin.com/job/infrastructure-security-security-engineer/4669011" target="_blank" rel="noopener">posting (mirror)</a></li>
+            <li>Teleport isn't named in the current Greenhouse snapshot (October 2026), so these postings are older. It is still a running tool and not a new purchase. <span class="tag tag-inferred">Inferred</span></li>
+            <li>Teleport covers <em>engineers reaching servers and clusters</em>. Who covers <strong>contractors and DC technicians at 20+ sites</strong>, OT vendor remote access, and SaaS and web access is an open question.</li>
+          </ul>
+          <p><strong>PANW stance: coexist, then expand around it.</strong> Leave engineer SSH and Kubernetes access on Teleport. Position Prisma Access (ZTNA 2.0) and Prisma Access Browser for field technicians, contractors and OT vendors. Treat PANW identity security (CyberArk) as the long-term privileged-access consolidation conversation, with the identity overlay. <span class="tag tag-inferred">Inferred</span></p>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-label">Everything else visible in public sources</p>
+    <div class="card table-wrap" style="padding:8px 8px;margin-bottom:16px;">
+      <table class="scoreboard-table">
+        <thead>
+          <tr><th>Category</th><th>Vendor / tool</th><th>Evidence</th><th>PANW angle</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>DC network OS</td>
+            <td>Cisco IOS, Juniper JunOS (ops). NVIDIA Spectrum/Quantum (fabric).</td>
+            <td>DC tech postings at 12+ sites. <a class="src" href="https://docs.coreweave.com/security/architecture" target="_blank" rel="noopener">BGP-unnumbered EVPN Clos</a> <span class="tag tag-confirmed">Confirmed</span></td>
+            <td>Vendor-neutral NGFW insertion at the edge. No dependency on the switch vendor.</td>
+          </tr>
+          <tr>
+            <td>Tenant network security</td>
+            <td>CoreWeave <strong>Nimbus</strong> on BlueField-3 (L4 + optional L7), Cilium eBPF, Tetragon</td>
+            <td><a class="src" href="https://docs.coreweave.com/products/networking/nimbus" target="_blank" rel="noopener">Nimbus</a> <span class="tag tag-confirmed">Confirmed</span></td>
+            <td>Built in-house, so don't sell against it. Sell CN-Series / AIRS <em>to tenants</em> on top of it.</td>
+          </tr>
+          <tr>
+            <td>CSPM / CNAPP</td>
+            <td><strong>Wiz</strong></td>
+            <td>"operationalizing CSPM tooling (like Wiz)". <a class="src" href="https://coreweave.com/careers/job?4686324006&amp;board=coreweave&amp;gh_jid=4686324006" target="_blank" rel="noopener">job</a> <span class="tag tag-confirmed">Confirmed</span></td>
+            <td>Cortex Cloud is the alternative. Wiz is now part of Google Cloud, which is also a CoreWeave Interconnect partner. <span class="tag tag-inferred">Inferred</span></td>
+          </tr>
+          <tr>
+            <td>SIEM / detection</td>
+            <td>Splunk query language in postings, plus an in-house SIEM build ("operation of our SIEM as an infrastructure")</td>
+            <td><a class="src" href="https://coreweave.com/careers/job?4650308006&amp;board=coreweave&amp;gh_jid=4650308006" target="_blank" rel="noopener">detection</a> <a class="src" href="https://coreweave.com/careers/job?4716496006&amp;board=coreweave&amp;gh_jid=4716496006" target="_blank" rel="noopener">SIEM infra</a> <span class="tag tag-confirmed">Confirmed</span></td>
+            <td><strong>Cortex XSIAM</strong>: buying the SIEM instead of building one, with native Falcon ingestion. This is the best non-firewall wedge.</td>
+          </tr>
+          <tr>
+            <td>Vuln mgmt / SOAR</td>
+            <td>Wiz, Rapid7, Tenable, Semgrep, Tines</td>
+            <td><a class="src" href="https://coreweave.com/careers/job?4653130006&amp;board=coreweave&amp;gh_jid=4653130006" target="_blank" rel="noopener">job</a> <span class="tag tag-confirmed">Confirmed</span></td>
+            <td>XSIAM automation replaces Tines-style glue. Cortex Xpanse covers external attack surface across 49 AZs of public IPs.</td>
+          </tr>
+          <tr>
+            <td>Identity</td>
+            <td>Okta, Microsoft Entra (customer IdPs), CoreWeave IAM, HashiCorp Vault</td>
+            <td><a class="src" href="https://docs.coreweave.com/security/architecture" target="_blank" rel="noopener">docs</a> <a class="src" href="https://www.coreweave.com/blog/bringing-enterprise-identity-and-key-control-to-ai-on-coreweave" target="_blank" rel="noopener">blog</a> <span class="tag tag-confirmed">Confirmed</span></td>
+            <td>User-ID / Cloud Identity Engine integrations for NGFW and Prisma Access policy.</td>
+          </tr>
+          <tr>
+            <td>Physical security</td>
+            <td>Bastille WIDS, Axis, Lenel, a Global Security Operations Center (GSOC)</td>
+            <td><a class="src" href="https://coreweave.com/careers/job?4711313006&amp;board=coreweave&amp;gh_jid=4711313006" target="_blank" rel="noopener">job</a> <span class="tag tag-confirmed">Confirmed</span></td>
+            <td>Physical-security devices (cameras, badge readers, sensors) are IoT/OT. Segment them with Device Security.</td>
+          </tr>
+          <tr>
+            <td>DC operations / OT data</td>
+            <td>Sunbird DCIM, ServiceNow CMDB, BMS/EPMS/SCADA feeds, NetBox</td>
+            <td><a class="src" href="https://coreweave.com/careers/job?4676674006&amp;board=coreweave&amp;gh_jid=4676674006" target="_blank" rel="noopener">job</a> <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://netboxlabs.com/customer-stories/coreweave/" target="_blank" rel="noopener">NetBox</a> <span class="tag tag-reported">Reported</span></td>
+            <td>IT/OT data pipelines cross the OT boundary, so that boundary is exactly where OT Security and a rugged NGFW sit.</td>
+          </tr>
+          <tr>
+            <td>Field connectivity</td>
+            <td>WireGuard / Tailscale (customer-facing know-how). Tailscale egress for Sandboxes.</td>
+            <td><a class="src" href="https://coreweave.com/careers/job?4568528006&amp;board=coreweave&amp;gh_jid=4568528006" target="_blank" rel="noopener">job</a> <a class="src" href="https://docs.coreweave.com/products/sandboxes/tailscale-egress" target="_blank" rel="noopener">docs</a> <span class="tag tag-confirmed">Confirmed</span></td>
+            <td>Prisma Access as the managed alternative when tenants need inspected egress.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-bottom:40px;">Job evidence comes from the CoreWeave Greenhouse board snapshot of November 6, 2026 (<code>corpus/careers/greenhouse.json</code>). The Teleport postings are no longer on the board and are cited from job-aggregator mirrors.</p>
+
+    <p class="section-label">Who's hiring for what (the security org is building now)</p>
+    <div class="two-col" style="margin-bottom:40px;">
+      <div class="card">
+        <h2>Network security roles</h2>
+        <div class="prose">
+          <ul>
+            <li><strong>Senior Network Security Engineer, Operational Technology</strong> (NJ, NY): "Establishing standards for security expectations covering all operational technology networks... network segmentation, host isolation, network traversal controls, and remote connectivity". It asks for "network firewalls, virtual private networks". The OT standard is <strong>being written now</strong>. <a class="src" href="https://coreweave.com/careers/job?4701022006&amp;board=coreweave&amp;gh_jid=4701022006" target="_blank" rel="noopener">job</a></li>
+            <li><strong>Senior Security Engineer, Networking</strong> (2 openings): "Design and deploy robust security measures across the network perimeter and internal fabrics (e.g., firewalls, IPS/IDS, segmentation...)", "Champion a Zero Trust security model", and "mitigating DDoS attacks, securing high-speed data center fabrics". <a class="src" href="https://coreweave.com/careers/job?4718155006&amp;board=coreweave&amp;gh_jid=4718155006" target="_blank" rel="noopener">job</a></li>
+            <li><strong>Senior Security Operations Engineer</strong>: "SIEM, EDR, IDS/IPS, and firewalls". <a class="src" href="https://coreweave.com/careers/job?4717610006&amp;board=coreweave&amp;gh_jid=4717610006" target="_blank" rel="noopener">job</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Product and federal security roles</h2>
+        <div class="prose">
+          <ul>
+            <li><strong>Security Products team</strong> (Identity and Integrations): builds "integrations with customers'... security products, such as identity providers, key-management services, HSMs, SIEMs, and policy or access-control systems". This is the door for a <strong>PANW integration</strong> in the Partner Network. <a class="src" href="https://coreweave.com/careers/job?4709751006&amp;board=coreweave&amp;gh_jid=4709751006" target="_blank" rel="noopener">job</a></li>
+            <li><strong>Senior Specialist Field Engineer, Federal Security</strong> (D.C.): zero-trust mandates, FIPS 140, STIG baselines, air-gapped designs, NIPR/SIPR/JWICS. <a class="src" href="https://coreweave.com/careers/job?4709343006&amp;board=coreweave&amp;gh_jid=4709343006" target="_blank" rel="noopener">job</a></li>
+            <li><strong>Director, Product Security</strong>, plus Detection Engineering, Vulnerability Management and Security Infrastructure. The security org is still scaling with the business. <span class="tag tag-inferred">Inferred</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Internal — Palo Alto Networks account research. Not for customer distribution.
+  </footer>
+</body>
+</html>

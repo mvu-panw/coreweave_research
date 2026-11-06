@@ -1,0 +1,100 @@
+# Use ARIA for autoresearch
+
+Source: https://docs.coreweave.com/products/aria/autoresearch
+
+# Use ARIA for autoresearch
+
+> Learn how to use ARIA, W&B's AI Research and Iteration Agent, to analyze results and run experiments.
+
+> [!NOTE]
+>
+> Available only in [W\&B Multi-tenant Cloud](https://docs.coreweave.com/products/wandb/platform/hosting.md#wb-multi-tenant-cloud).
+
+Use ARIA, W\&B's AI Research and Iteration Agent, as your research assistant to analyze experiments, explain results, identify patterns across runs, recommend next steps, build visualizations, and more.
+
+Based on your previous runs, ARIA can recommend and run new experiments.
+
+ARIA uses W\&B Launch to run experiments in a sandbox environment. Before ARIA can run experiments in your project, use [ARIA to help you set up W\&B Launch](https://docs.coreweave.com/products/aria/autoresearch.md#set-up-wb-launch-with-aria).
+
+## Set up W\&B Launch with ARIA
+
+ARIA can help you configure W\&B Launch from the chat. For example, if you ask ARIA:
+
+```text title="User prompt" theme={"system"}
+Can you help me set up W&B Launch?
+```
+
+ARIA checks which [W\&B Launch components](https://docs.coreweave.com/products/aria/autoresearch.md#launch-components) are available in your project and guides you through the remaining setup steps.
+
+The following example shows part of an ARIA response to the prompt, "Can you help me set up W\&B Launch?":
+
+> [accordion] ARIA response
+>
+> ```text theme={"system"}
+> ## 1. Decide where jobs will actually run
+>
+> Pick one:
+>
+> ### Option A — Kubernetes / cluster setup
+> Use this if you want shared GPU/CPU infrastructure and a
+> persistent Launch agent.
+>
+> Recommended for “real” team usage.
+>
+> ### Option B — Local Docker setup
+> Use this if you want jobs to run on your own machine,
+> e.g. local workstation with Docker and possibly a GPU.
+>
+> Good for testing Launch quickly.
+>
+> I’d usually start with **Kubernetes** if
+> you have cluster access. If not, start with **Local Docker**.
+>
+> ## 2. Create a Launch queue in the W&B UI
+>
+> Go to the Launch page for the entity: https://wandb.ai/wandb/launch
+>
+> Then:
+>
+> 1. Click **Create Queue**.
+> 2. Select entity: `wandb`.
+> 3. Give the queue a name.
+> 4. Choose the queue resource type:
+>    - **Kubernetes** for cluster execution.
+>    - **Docker** for local execution.
+> 5. Add the queue resource configuration.
+> 6. Click **Create Queue**.
+>
+> ## 3. Kubernetes path: install a Launch agent with Helm
+>
+> If using Kubernetes, you need:
+>
+> - A Kubernetes cluster.
+> - `kubectl` access to the cluster.
+> - `helm` installed locally.
+> - A W&B **service account API key**.
+> - Permission to create/update/delete Kubernetes resources in the target namespace.
+>
+> Do **not** use your personal API key for the agent if this is a real
+> setup. Use a W&B service account key.
+> ```
+
+### Launch components
+
+W\&B Launch has three core components:
+
+* **Launch job**: A reusable blueprint for configuring and running a task in an ML workflow.
+* **Launch queue**: A first-in, first-out queue that submits jobs to a compute target, such as a Kubernetes cluster.
+* **Launch agent**: A process that polls a queue and runs jobs on the compute target configured for that queue.
+
+ARIA can manage the W\&B-side Launch workflow after a queue and active Launch agent are available. ARIA usually cannot start a durable Launch agent on your local machine, Kubernetes cluster, SageMaker environment, or Vertex AI environment. A user or administrator must provide the compute environment, credentials, and running agent.
+
+The following table summarizes the steps and who usually performs them to enable ARIA to run experiments with W\&B Launch.
+
+| Step | Usually performed by | Details |
+| - | - | - |
+| Create a Launch queue | ARIA or team admin | ARIA can help create a queue when the required permissions and target backend are clear. Team admin permissions might be required. |
+| Choose or provision a compute backend | Team member or infrastructure owner | ARIA needs access to a Docker host, Kubernetes cluster, SageMaker environment, or Vertex AI environment. ARIA cannot provision infrastructure unless it is already accessible through W\&B Launch. |
+| Start the Launch agent | Team member or infrastructure owner | The Launch agent must run persistently on your machine or cluster with W\&B credentials. |
+| Configure a service account or API key | Team admin | Create a service account and use its API key to start the Launch agent, so the agent doesn't depend on one user's credentials. ARIA doesn't use this key directly. For more information, see [Use service accounts to automate workflows](https://docs.coreweave.com/products/wandb/platform/hosting/iam/service-accounts.md). |
+| Submit experiments to the queue | ARIA | After a queue has an active agent, ARIA can submit jobs, relaunch runs with config overrides, monitor results, debug failures, and compare metrics. |

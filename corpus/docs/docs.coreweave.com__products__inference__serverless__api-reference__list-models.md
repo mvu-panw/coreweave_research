@@ -1,0 +1,66 @@
+# List models
+
+Source: https://docs.coreweave.com/products/inference/serverless/api-reference/list-models
+
+# List models
+
+> Retrieve a list of available Serverless Inference models and their IDs using the models endpoint.
+
+This page shows how to retrieve all models available through the Serverless Inference API, along with their IDs. Use this endpoint to discover available models programmatically, select a model dynamically at runtime, or confirm which models your account can access.
+
+## Request examples
+
+The following examples show how to call the models endpoint from Python and from the command line.
+
+> [tab] Python
+>
+> ```python theme={"system"}
+> import openai
+>
+> client = openai.OpenAI(
+>     base_url="https://api.inference.wandb.ai/v1",
+>     api_key="[YOUR-API-KEY]",
+>     project="[YOUR-TEAM]/[YOUR-PROJECT]"  # Optional, for usage tracking
+> )
+>
+> response = client.models.list()
+>
+> for model in response.data:
+>     print(model.id)
+> ```
+
+> [tab] Bash
+>
+> ```bash theme={"system"}
+> curl https://api.inference.wandb.ai/v1/models \
+>   -H "Content-Type: application/json" \
+>   -H "Authorization: Bearer [YOUR-API-KEY]" \
+>   -H "OpenAI-Project: [YOUR-TEAM]/[YOUR-PROJECT]"
+> ```
+
+## Response format
+
+The endpoint returns a list of model objects in OpenAI-compatible format, so you can parse the response using standard OpenAI client libraries. Each entry includes the model ID you pass to other Serverless Inference API endpoints.
+
+```json theme={"system"}
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "deepseek-ai/DeepSeek-V3.1",
+      "object": "model",
+      "created": 0,
+      "owned_by": "system",
+      "root": "deepseek-ai/DeepSeek-V3.1"
+    },
+    {
+      "id": "openai/gpt-oss-20b",
+      "object": "model",
+      "created": 0,
+      "owned_by": "system",
+      "root": "openai/gpt-oss-20b"
+    }
+    // ... more models
+  ]
+}
+```

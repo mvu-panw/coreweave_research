@@ -1,0 +1,187 @@
+# coreweave_object_storage_bucket_lifecycle_configuration (Resource)
+
+Source: https://docs.coreweave.com/platform/terraform/resources/object_storage_bucket_lifecycle_configuration
+
+# coreweave_object_storage_bucket_lifecycle_configuration (Resource)
+
+> Terraform resource for configuring lifecycle rules on CoreWeave Object Storage buckets
+
+Lifecycle configurations automate object management by defining actions applied to objects over time, such as expiring objects after a specified period or transitioning them to different storage tiers. This helps optimize storage costs and maintain data hygiene. [Learn more about S3-compatible lifecycle bucket configurations](https://docs.coreweave.com/products/storage/object-storage/reference/object-storage-s3.md#bucket-lifecycles).
+
+## Example usage
+
+```terraform theme={"system"}
+resource "coreweave_object_storage_bucket" "default" {
+  name = "bucket-lifecycle-example"
+  zone = "US-EAST-04A"
+}
+
+resource "coreweave_object_storage_bucket_versioning" "default" {
+  bucket = coreweave_object_storage_bucket.default.name
+  versioning_configuration {
+    status = "Enabled"
+  }
+
+}
+
+resource "coreweave_object_storage_bucket_lifecycle_configuration" "default" {
+  bucket = coreweave_object_storage_bucket.default.name
+  ## Ensure bucket versioning is enabled first since we specify noncurrent_version_expiration
+  depends_on = [coreweave_object_storage_bucket_versioning.default]
+
+  # Rule 1: Expire old logs and clean up noncurrent versions
+  rule {
+    id     = "cleanup-logs"
+    status = "Enabled"
+
+    # apply to objects under logs/ that have tag env=prod and size > 1MB
+    filter {
+      and {
+        prefix                   = "logs/"
+        object_size_greater_than = 1000000
+        tags = {
+          env = "prod"
+        }
+      }
+    }
+
+    expiration {
+      days = 30
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days           = 7
+      newer_noncurrent_versions = 2
+    }
+  }
+
+  # Rule 2: Abort abandoned multipart uploads and expire traces after a fixed date
+  rule {
+    id     = "expire-traces"
+    status = "Enabled"
+
+    filter {
+      prefix = "traces/"
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 5
+    }
+
+    expiration {
+      date = "2026-01-01T00:00:00Z"
+    }
+  }
+}
+```
+
+## Schema
+
+### Required
+
+* `bucket` (String) Name of the bucket to apply lifecycle configuration to
+
+### Optional
+
+* `rule` (Block List) One or more lifecycle rule blocks (see [below for nested schema](#nestedblock--rule))
+
+### Nested Schema for `rule`
+
+Required:
+
+* `status` (String) Rule status: Enabled or Disabled
+
+Optional:
+
+* `abort_incomplete_multipart_upload` (Block, Optional) (see [below for nested schema](#nestedblock--rule--abort_incomplete_multipart_upload))
+* `expiration` (Block, Optional) (see [below for nested schema](#nestedblock--rule--expiration))
+* `filter` (Block, Optional) (see [below for nested schema](#nestedblock--rule--filter))
+* `id` (String) Unique identifier for the rule
+* `noncurrent_version_expiration` (Block, Optional) (see [below for nested schema](#nestedblock--rule--noncurrent_version_expiration))
+* `noncurrent_version_transition` (Block Set) (see [below for nested schema](#nestedblock--rule--noncurrent_version_transition))
+* `prefix` (String, Deprecated) Deprecated. Object key prefix to which the rule applies. CoreWeave AI Object Storage rejects requests that set this field; use `filter.prefix` instead.
+* `transition` (Block Set) (see [below for nested schema](#nestedblock--rule--transition))
+
+### Nested Schema for `rule.abort_incomplete_multipart_upload`
+
+Optional:
+
+* `days_after_initiation` (Number) Days after initiation to abort multipart uploads
+
+### Nested Schema for `rule.expiration`
+
+Optional:
+
+* `date` (String) ISO8601 date when objects expire
+* `days` (Number) Number of days after object creation for expiration
+* `expired_object_delete_marker` (Boolean) Whether to remove expired delete markers
+
+### Nested Schema for `rule.filter`
+
+Optional:
+
+* `and` (Block, Optional) Configuration block used to apply a logical AND to two or more predicates. The Lifecycle Rule will apply to any object matching all the predicates configured inside the and block. (see [below for nested schema](#nestedblock--rule--filter--and))
+* `object_size_greater_than` (Number) Minimum object size (in bytes) to which the rule applies.
+* `object_size_less_than` (Number) Maximum object size (in bytes) to which the rule applies.
+* `prefix` (String) Prefix filter
+* `tag` (Block, Optional) (see [below for nested schema](#nestedblock--rule--filter--tag))
+
+### Nested Schema for `rule.filter.and`
+
+Optional:
+
+* `object_size_greater_than` (Number) Minimum object size (in bytes) to which the rule applies.
+* `object_size_less_than` (Number) Maximum object size (in bytes) to which the rule applies.
+* `prefix` (String) Prefix identifying one or more objects to which the rule applies.
+* `tags` (Map of String) Map for specifying tag keys and values.
+
+### Nested Schema for `rule.filter.tag`
+
+Optional:
+
+* `key` (String) Tag key filter
+* `value` (String) Tag value filter
+
+### Nested Schema for `rule.noncurrent_version_expiration`
+
+Optional:
+
+* `newer_noncurrent_versions` (Number) Number of noncurrent versions to retain
+* `noncurrent_days` (Number) Days after becoming noncurrent before deletion
+
+### Nested Schema for `rule.noncurrent_version_transition`
+
+Required:
+
+* `noncurrent_days` (Number) Number of days after object becomes noncurrent before the transition may occur
+* `storage_class` (String) Storage class to transition noncurrent objects to
+
+Optional:
+
+* `newer_noncurrent_versions` (Number) Number of noncurrent versions to retain
+
+### Nested Schema for `rule.transition`
+
+Required:
+
+* `storage_class` (String) Storage class to transition objects to
+
+Optional:
+
+* `date` (String) ISO8601 date when objects transition
+* `days` (Number) Number of days after object creation for transition
+
+## Import
+
+Import is supported using the following syntax:
+
+```bash theme={"system"}
+terraform import coreweave_object_storage_bucket_lifecycle_configuration.default {{bucket_name}}
+```
+
+```terraform theme={"system"}
+import {
+  to = coreweave_object_storage_bucket_lifecycle_configuration.default
+  id = "{{bucket_name}}"
+}
+```

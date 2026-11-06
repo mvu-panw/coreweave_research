@@ -1,0 +1,164 @@
+# coreweave_inference_deployment (Resource)
+
+Source: https://docs.coreweave.com/platform/terraform/resources/inference_deployment
+
+# coreweave_inference_deployment (Resource)
+
+> Terraform resource for creating and managing CoreWeave Managed Inference deployments
+
+Create and manage [CoreWeave Managed Inference](https://docs.coreweave.com/products/inference.md) deployments. See the [getting started walkthrough](https://docs.coreweave.com/products/inference/getting-started.md) for the gateway-to-deployment flow.
+
+## Example usage
+
+```terraform theme={"system"}
+# Look up available parameters first (optional but recommended).
+data "coreweave_inference_deployment_parameters" "deploy_params" {}
+
+resource "coreweave_inference_deployment" "example" {
+  name        = "my-llm"
+  gateway_ids = [tolist(data.coreweave_inference_deployment_parameters.deploy_params.gateway_ids)[0]]
+
+  runtime = {
+    engine  = "vllm"
+    version = "0.8.5"
+    engine_config = {
+      "max-model-len" = "8192"
+    }
+    engine_env = {
+      VLLM_USE_FLASHINFER_MOE_FP4 = "0"
+    }
+  }
+
+  resources = {
+    instance_type = "H100_80GB_SXM5"
+    gpu_count     = 1
+  }
+
+  model = {
+    name   = "meta-llama/Llama-3.1-8B"
+    bucket = "my-model-bucket"
+    path   = "models/llama-3.1-8b"
+  }
+
+  autoscaling = {
+    min              = 1
+    max              = 4
+    priority         = 100
+    capacity_classes = ["CAPACITY_CLASS_RESERVED", "CAPACITY_CLASS_ON_DEMAND"]
+    concurrency      = 16
+  }
+
+  traffic = {
+    weight = 100
+  }
+
+  # To enable checkpoint hot-loading on a supported Dynamo runtime, configure
+  # this immutable object at creation. Changes require deployment replacement.
+  # hot_load = {
+  #   bucket          = "my-checkpoint-bucket"
+  #   path_prefix     = "runs/my-model"
+  #   transition_mode = "TRANSITION_MODE_ASYNC"
+  # }
+}
+```
+
+## Schema
+
+### Required
+
+* `autoscaling` (Attributes) [Autoscaling](https://docs.coreweave.com/products/inference/scaling.md) configuration. (see [below for nested schema](#nestedatt--autoscaling))
+* `gateway_ids` (Set of String) The [gateway](https://docs.coreweave.com/products/inference/gateways.md) IDs to associate the deployment with. At least one is required.
+* `model` (Attributes) [Model](https://docs.coreweave.com/products/inference/models.md) configuration. (see [below for nested schema](#nestedatt--model))
+* `name` (String) The name of the deployment. Must be a valid hostname label.
+* `resources` (Attributes) [GPU resource](https://docs.coreweave.com/products/inference/models.md) configuration for the deployment. (see [below for nested schema](#nestedatt--resources))
+* `runtime` (Attributes) [Runtime](https://docs.coreweave.com/products/inference/models.md) selection and configuration. (see [below for nested schema](#nestedatt--runtime))
+
+### Optional
+
+* `disabled` (Boolean) Whether the deployment is disabled.
+* `hot_load` (Attributes) Checkpoint hot-loading configuration. Immutable after creation; adding, changing or removing it replaces the deployment. (see [below for nested schema](#nestedatt--hot_load))
+* `traffic` (Attributes) Traffic configuration. Omit to accept the API default (weight 0, which normalizes to 100% when no other deployment shares the model name). After apply, `weight` is populated from the API. (see [below for nested schema](#nestedatt--traffic))
+
+### Read-Only
+
+* `conditions` (Attributes List) Detailed status conditions for the deployment. (see [below for nested schema](#nestedatt--conditions))
+* `created_at` (String) RFC3339 timestamp of when the deployment was created.
+* `id` (String) The unique identifier of the deployment.
+* `organization_id` (String) The organization ID that owns the deployment.
+* `status` (String) The current status of the deployment. See the [Inference API overview](https://docs.coreweave.com/products/inference/reference/api-overview.md) for status values. Creation and updates that disable the deployment return once resources are applied rather than once the deployment is serving, so the status may not be ready immediately. An update to a serving deployment instead blocks until the rollout reaches STATUS\_READY. Poll the API for live readiness.
+* `updated_at` (String) RFC3339 timestamp of when the deployment was last updated.
+
+### Nested Schema for `autoscaling`
+
+Required:
+
+* `max` (Number) Maximum number of instances. Must be ≥1.
+* `min` (Number) Minimum number of instances. Must be ≥1.
+
+Optional:
+
+* `capacity_classes` (List of String) Ordered preference list of [capacity classes](https://docs.coreweave.com/products/inference/scaling.md#capacity-claims) to use. Order is significant: the first satisfiable class wins. Allowed values: `CAPACITY_CLASS_RESERVED`, `CAPACITY_CLASS_ON_DEMAND`.
+* `concurrency` (Number) Concurrency per instance target (≥1). Controls latency vs throughput tradeoffs.
+* `priority` (Number) Priority for cross-deployment scaling (0-1000). Higher values win when there is contention.
+
+### Nested Schema for `model`
+
+Required:
+
+* `bucket` (String) The CAIOS bucket the model is stored in. The inference service account must have [bucket access](https://docs.coreweave.com/products/inference/models.md#grant-inference-access-to-your-bucket).
+* `name` (String) The model name used in API requests (e.g. the `/models` endpoint). Length must be 4-63 characters.
+* `path` (String) The CAIOS path to the model and its configuration files.
+
+### Nested Schema for `resources`
+
+Required:
+
+* `gpu_count` (Number) Number of GPUs per instance. Must be one of: 1, 2, 4, 8, 16.
+* `instance_type` (String) The instance type to use.
+
+### Nested Schema for `runtime`
+
+Required:
+
+* `engine` (String) The inference engine to use.
+
+Optional:
+
+* `engine_config` (Map of String) Engine-specific configuration key/value pairs.
+* `engine_env` (Map of String) Engine-specific environment variables to inject into the model runtime container. Variable names must come from the selected engine version's server-side allow list, exposed by `data.coreweave_inference_deployment_parameters.<name>.runtime_engine_options[<engine>].versions[<version>].env_options`; unsupported names are rejected by the API.
+* `version` (String) The version of the engine. If not set, defaults to the latest available version. Must follow semver format (e.g. `1.2.3`).
+
+### Nested Schema for `hot_load`
+
+Required:
+
+* `bucket` (String) CoreWeave Object Storage bucket holding checkpoint snapshots.
+* `transition_mode` (String) Request transition mode during checkpoint swaps. Use TRANSITION\_MODE\_ASYNC.
+
+Optional:
+
+* `path_prefix` (String) Path prefix holding snapshots. Defaults to an empty string (bucket root). The snapshot identity is appended to this prefix.
+
+### Nested Schema for `traffic`
+
+Optional:
+
+* `weight` (Number) Traffic weight (0-1000). Values are normalized into percentages across deployments with the same model name.
+
+### Nested Schema for `conditions`
+
+Read-Only:
+
+* `last_update_time` (String) RFC3339 timestamp of the last condition transition.
+* `message` (String) A human-readable message about the condition's last transition.
+* `reason` (String) A short, machine-readable reason for the condition's last transition.
+* `status` (String) The condition status (`True`, `False`, or `Unknown`).
+* `type` (String) The condition type (e.g. `Ready`, `Progressing`).
+
+## Import
+
+Import is supported using the following syntax:
+
+```bash theme={"system"}
+terraform import coreweave_inference_deployment.example {{deployment-id}}
+```

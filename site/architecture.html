@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoreWeave Account — Architecture</title>
+  <link rel="icon" type="image/png" href="assets/images/PAN-Color.png" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=1" />
+</head>
+<body>
+  <nav>
+    <img src="assets/images/PAN-Color.png" alt="Palo Alto Networks" class="logo" />
+    <a class="site-title" href="index.html">CoreWeave Account</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="security-stack.html">Security Stack</a>
+      <a href="nvidia-gear.html">NVIDIA Gear</a>
+      <a href="positioning.html">Firewall Positioning</a>
+      <a href="resources.html">Resources</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1>Architecture</h1>
+      <p>How CoreWeave's network is layered, built from its security architecture, Nimbus, VPC and Direct Connect docs. There are no customer-supplied diagrams yet.</p>
+    </div>
+
+    <div class="banner">
+      <span class="tag tag-confirmed">Confirmed</span> stated on a CoreWeave-owned page, doc or filing &nbsp;
+      <span class="tag tag-reported">Reported</span> third-party or secondhand source &nbsp;
+      <span class="tag tag-inferred">Inferred</span> our reading, verify in discovery
+    </div>
+
+    <p class="section-label">Layered view, with PANW enforcement points</p>
+    <div class="card" style="margin-bottom:16px;padding:20px;">
+      <svg viewBox="0 0 900 600" width="100%" role="img" aria-labelledby="archTitle archDesc" style="display:block;max-width:900px;margin:0 auto;font-family:var(--font);">
+        <title id="archTitle">CoreWeave network layers</title>
+        <desc id="archDesc">Internet, peering, Direct Connect and CoreWeave Interconnect reach CoreWeave's edge and PoPs, which make up Zone 2 for external ingress and egress. Inside each availability zone, a BGP-unnumbered EVPN-VXLAN Clos fabric carries Zone 1, the application data plane. Each CKS node has a BlueField-3 DPU running Nimbus, which enforces tenant isolation. A separate InfiniBand or Spectrum-X GPU fabric carries RDMA traffic with no inline security. Zone 0 is DPU management and the Kubernetes control plane. Facility OT and corporate access sit alongside. PANW enforcement points are the edge, Zone 0, OT, corporate and field access, and tenant-deployed CN-Series.</desc>
+        <defs>
+          <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9EA0A8"/></marker>
+        </defs>
+        <g font-size="13" fill="#FFFFFF">
+          <!-- Internet -->
+          <rect x="20" y="16" width="860" height="46" rx="10" fill="#13131F" stroke="#1E1E2E"/>
+          <text x="450" y="44" text-anchor="middle">Internet &middot; peering &middot; Direct Connect (10/100/400G, MACsec) &middot; Equinix / Megaport &middot; CoreWeave Interconnect (Google Cloud)</text>
+          <line x1="450" y1="62" x2="450" y2="92" stroke="#9EA0A8" stroke-width="1.5" marker-end="url(#ar)"/>
+          <!-- Zone 2 edge -->
+          <rect x="20" y="94" width="860" height="60" rx="10" fill="#13131F" stroke="#00C0E8"/>
+          <text x="40" y="118" font-weight="600" fill="#00C0E8">Zone 2: external ingress / egress (edge, PoPs)</text>
+          <text x="40" y="139" fill="#9EA0A8" font-size="12">Global AI Network backbone: every PoP N&times;400G, MACsec, 4 diverse paths &middot; public IPv4 + NAT per AZ</text>
+          <rect x="690" y="106" width="176" height="32" rx="16" fill="#7B2FBE" fill-opacity="0.35" stroke="#7B2FBE"/>
+          <text x="778" y="127" text-anchor="middle" font-size="12">PA-7500 / PA-5580 edge</text>
+          <line x1="450" y1="154" x2="450" y2="186" stroke="#9EA0A8" stroke-width="1.5" marker-end="url(#ar)"/>
+          <!-- AZ -->
+          <rect x="20" y="188" width="860" height="396" rx="10" fill="none" stroke="#00C0E8" stroke-dasharray="5 4"/>
+          <text x="40" y="212" font-weight="600" fill="#00C0E8">Availability zone (data hall)</text>
+          <!-- Zone 1 -->
+          <rect x="40" y="226" width="400" height="168" rx="10" fill="#13131F" stroke="#1E1E2E"/>
+          <text x="56" y="250" font-weight="600">Zone 1: application data plane</text>
+          <text x="56" y="272" fill="#9EA0A8" font-size="12">Clos leaf/spine, BGP-unnumbered EVPN Type-5</text>
+          <text x="56" y="291" fill="#9EA0A8" font-size="12">VRF + VXLAN VNI per tenant; TORs only forward</text>
+          <text x="56" y="310" fill="#9EA0A8" font-size="12">BlueField-3 per node runs Nimbus: L4/L7 policy,</text>
+          <text x="56" y="329" fill="#9EA0A8" font-size="12">firewalling, VXLAN termination, PXE boot</text>
+          <text x="56" y="348" fill="#9EA0A8" font-size="12">Cilium eBPF east-west &middot; Falcon on every CKS node</text>
+          <rect x="56" y="362" width="236" height="22" rx="11" fill="#7B2FBE" fill-opacity="0.35" stroke="#7B2FBE"/>
+          <text x="174" y="377" text-anchor="middle" font-size="11">CN-Series / Prisma AIRS (tenant)</text>
+          <!-- GPU fabric -->
+          <rect x="460" y="226" width="400" height="168" rx="10" fill="#13131F" stroke="#1E1E2E"/>
+          <text x="476" y="250" font-weight="600">GPU fabric (RDMA)</text>
+          <text x="476" y="272" fill="#9EA0A8" font-size="12">Quantum-2 NDR 400G / Quantum-X800 XDR 800G IB</text>
+          <text x="476" y="291" fill="#9EA0A8" font-size="12">or Spectrum-X RoCE (GB300-e, Vera Rubin)</text>
+          <text x="476" y="310" fill="#9EA0A8" font-size="12">non-blocking fat tree, SHARP, GPUDirect RDMA</text>
+          <text x="476" y="329" fill="#9EA0A8" font-size="12">NVL72 sold as full racks of 18 nodes</text>
+          <rect x="476" y="362" width="190" height="22" rx="11" fill="#1E1E2E" stroke="#9EA0A8"/>
+          <text x="571" y="377" text-anchor="middle" font-size="11" fill="#9EA0A8">no inline security here</text>
+          <!-- Zone 0 -->
+          <rect x="40" y="410" width="260" height="158" rx="10" fill="#13131F" stroke="#1E1E2E"/>
+          <text x="56" y="434" font-weight="600">Zone 0: DPU mgmt + K8s</text>
+          <text x="56" y="456" fill="#9EA0A8" font-size="12">Nimbus Operator/Controller,</text>
+          <text x="56" y="475" fill="#9EA0A8" font-size="12">CKS control plane, BMC, switch mgmt</text>
+          <text x="56" y="494" fill="#9EA0A8" font-size="12">engineer access via Teleport</text>
+          <rect x="56" y="532" width="120" height="22" rx="11" fill="#7B2FBE" fill-opacity="0.35" stroke="#7B2FBE"/>
+          <text x="116" y="547" text-anchor="middle" font-size="11">PA-3440</text>
+          <!-- OT -->
+          <rect x="320" y="410" width="260" height="158" rx="10" fill="#13131F" stroke="#1E1E2E"/>
+          <text x="336" y="434" font-weight="600">Facility OT &amp; physical security</text>
+          <text x="336" y="456" fill="#9EA0A8" font-size="12">BMS, EPMS, SCADA, cooling, power</text>
+          <text x="336" y="475" fill="#9EA0A8" font-size="12">Bastille WIDS, Axis, Lenel (GSOC)</text>
+          <text x="336" y="494" fill="#9EA0A8" font-size="12">Valvey/Racky cooling control</text>
+          <rect x="336" y="532" width="200" height="22" rx="11" fill="#7B2FBE" fill-opacity="0.35" stroke="#7B2FBE"/>
+          <text x="436" y="547" text-anchor="middle" font-size="11">OT Security + rugged NGFW</text>
+          <!-- Field -->
+          <rect x="600" y="410" width="260" height="158" rx="10" fill="#13131F" stroke="#1E1E2E"/>
+          <text x="616" y="434" font-weight="600">Field, corporate &amp; OOB</text>
+          <text x="616" y="456" fill="#9EA0A8" font-size="12">DC techs at 20+ sites, contractors,</text>
+          <text x="616" y="475" fill="#9EA0A8" font-size="12">OT vendors; offices NJ, NY, CA, WA</text>
+          <text x="616" y="494" fill="#9EA0A8" font-size="12">cellular OOB per site</text>
+          <rect x="616" y="532" width="226" height="22" rx="11" fill="#7B2FBE" fill-opacity="0.35" stroke="#7B2FBE"/>
+          <text x="729" y="547" text-anchor="middle" font-size="11">Prisma Access &middot; PA-415-5G</text>
+        </g>
+      </svg>
+      <p class="note" style="text-align:center;">Purple pills are proposed PANW enforcement points. The zones, fabric, DPU/Nimbus and Falcon details are <span class="tag tag-confirmed">Confirmed</span> from CoreWeave docs. The vendor at the edge and the OT and field details are <span class="tag tag-inferred">Inferred</span>, so verify them in discovery.</p>
+    </div>
+    <div style="margin-bottom:40px;"></div>
+
+    <div class="two-col" style="margin-bottom:40px;">
+      <div class="card">
+        <h2>Three security zones (CoreWeave's own model)</h2>
+        <div class="prose">
+          <ul>
+            <li><strong>Zone 0</strong> is DPU management and the Kubernetes control plane. <strong>Zone 1</strong> is the application data plane. <strong>Zone 2</strong> is external ingress and egress. <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://docs.coreweave.com/security/architecture" target="_blank" rel="noopener">security architecture</a></li>
+            <li>"The DPU filters north-south traffic using Layer 4 and optional Layer 7 policies. The CNI (such as Cilium with eBPF) manages east-west traffic, enforced at the DPU level."</li>
+            <li>DPUs export logs and metrics. Telemetry runs through VictoriaMetrics and Loki, with customer-deployed Falco or Tetragon for runtime enforcement.</li>
+            <li><strong>Shared responsibility:</strong> CoreWeave owns the physical, network, VPC and encapsulation layers. Customers own Kubernetes network policies and guest firewall configuration. <a class="src" href="https://docs.coreweave.com/policies/terms-of-service/shared-responsibility-model" target="_blank" rel="noopener">model</a></li>
+            <li><strong>Implication:</strong> CoreWeave already built its tenant firewall in software on the DPU. PANW's CoreWeave-owned opportunity is Zone 2, Zone 0, OT and corporate. Zone 1 is a <em>tenant</em> sale. <span class="tag tag-inferred">Inferred</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Nimbus: CoreWeave's DPU control plane</h2>
+        <div class="prose">
+          <ul>
+            <li>This is proprietary control and data-plane software "integrated into the NVIDIA BlueField DPU that's affixed to each of our Nodes". It has an Operator on the DPU and a Controller in the CKS management cluster. <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://docs.coreweave.com/products/networking/nimbus" target="_blank" rel="noopener">docs</a></li>
+            <li>It offloads "firewalling and encryption directly to the DPU", manages VPC membership (one node can sit in several customer VPCs), and verifies DPU firmware and configuration.</li>
+            <li>Routing is a Layer 3 EVPN-VXLAN overlay that moves intelligence off the TOR. "TOR switches are repurposed as mere packet-forwarding devices, using unnumbered BGP."</li>
+            <li><strong>Why it matters:</strong> Cisco's Hybrid Mesh Firewall and Prisma AIRS on BlueField both want a slot on this DPU. CoreWeave controls it, so any DPU security story is a joint-engineering conversation, not a product drop-in. <span class="tag tag-inferred">Inferred</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <p class="section-label">US footprint (availability zones from docs)</p>
+    <div class="card table-wrap" style="padding:8px 8px;margin-bottom:16px;">
+      <table class="scoreboard-table">
+        <thead>
+          <tr><th>Super region</th><th>AZs</th><th>States</th><th>General Access AZs</th><th>Notes</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>US-EAST</code></td>
+            <td>21</td>
+            <td>NJ, NY, PA, VA, GA, OH, MA, NC, MI</td>
+            <td>US-EAST-01A (NY), 02A / 14A / 17A (NJ), 04A / 15A (VA), 06A / 08A (OH), 13A (MI)</td>
+            <td>HQ region. Most Direct Connect on-ramps (Ashburn, Atlanta, Chicago) list US-EAST-04 as the lowest-latency region. A facility power incident hit US-EAST-15A in October 2026. <span class="tag tag-reported">Reported</span> <a class="src" href="https://pingoru.io/providers/coreweave/outage-history" target="_blank" rel="noopener">status history</a></td>
+          </tr>
+          <tr>
+            <td><code>US-CENTRAL</code></td>
+            <td>15</td>
+            <td>TX, IL, IN, ND, OK, OH</td>
+            <td>US-CENTRAL-06A (TX), 07A (IL), 09A (TX)</td>
+            <td>US-CENTRAL-09A is the first <strong>Vera Rubin NVL72</strong> zone. Ellendale ND (08A/08B) and Denton TX (about 260 MW, Core Scientific) are large dedicated sites. <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://docs.coreweave.com/platform/regions/all-availability-zones" target="_blank" rel="noopener">AZs</a></td>
+          </tr>
+          <tr>
+            <td><code>US-WEST</code></td>
+            <td>13</td>
+            <td>NV, AZ, OR, WA, CO, CA</td>
+            <td>RNO2A, US-WEST-01A / 10A (NV), 02B / 04A (AZ), 09B (WA)</td>
+            <td>Reno, NV appears in DC hiring. B300 and GB300 run in US-WEST-01A and 10A.</td>
+          </tr>
+          <tr>
+            <td>Outside the US</td>
+            <td>10</td>
+            <td>Canada (Ontario), Sweden, Norway, Denmark, Spain, UK</td>
+            <td>CA-EAST-01A, EU-SOUTH-03B / 04A</td>
+            <td>Nordics and UK are mostly Dedicated Access. India (AdaniConneX, 240 MW, Navi Mumbai) is announced.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-bottom:40px;"><strong>Dedicated Access</strong> AZs are "managed and reserved for select customers", which is where OpenAI, Meta and Microsoft capacity most likely lives. <span class="tag tag-inferred">Inferred</span> DC technician hiring (November 2026) adds sites that aren't obvious from AZ names: Afton TX, Plano TX, Caledonia MI, Chester VA, Cheyenne WY, Cincinnati and Columbus OH, Dalton and Douglasville GA, Elk Grove and West Chicago IL, Hammond IN, Marble NC, Miami FL, Sandusky OH and Reno NV. Lancaster PA (up to $6B, 100 MW expandable to 300 MW) and Kenilworth NJ are under construction. <span class="tag tag-reported">Reported</span> <a class="src" href="https://www.datacenterdynamics.com/en/news/coreweave-plans-6bn-data-center-in-lancaster-pennsylvania/" target="_blank" rel="noopener">DCD</a></p>
+
+    <div class="two-col" style="margin-bottom:40px;">
+      <div class="card">
+        <h2>The Global AI Network (backbone)</h2>
+        <div class="prose">
+          <ul>
+            <li>CoreWeave runs <strong>its own backbone</strong> connecting 51 active data centers in North America and Europe (August 11, 2026). It is "Petabit-scale", built on "high speed edge routers", and "every CoreWeave PoP is deployed with multiple 400 Gbps connections over a unified optical IP network". <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://www.coreweave.com/blog/coreweave-builds-the-first-global-backbone-network-purpose-built-for-ai" target="_blank" rel="noopener">backbone</a></li>
+            <li><strong>MACsec "from day 1 everywhere"</strong>, end-to-end across the backbone and not only on Direct Connect links. Every PoP connects to at least two others over four physically diverse paths, and every region is dual-homed to two PoPs.</li>
+            <li><strong>New PoPs from Q4 2026:</strong> UAE, India (240 MW in Navi Mumbai), Indonesia (three DCs), Singapore, Australia, South Korea and Japan, over terrestrial and subsea fiber. There is also a new 22.5 MW site in Copenhagen.</li>
+            <li><strong>Implication:</strong> the PoPs are where internet transit and peering meet a backbone CoreWeave owns. That's where a terabit-class NGFW belongs, and each new APAC or ME PoP is a fresh design. Which vendor makes the edge routers isn't public, so ask. <span class="tag tag-inferred">Inferred</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Facility OT is software-defined now</h2>
+        <div class="prose">
+          <ul>
+            <li><strong>Valvey</strong> is a patent-pending programmable per-rack liquid-cooling valve assembly that controls flow, temperature, pressure and leak detection. Requests to "optimize cooling, isolate a rack for maintenance, or <strong>trigger an emergency shutdown</strong>" run through it automatically. <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://www.coreweave.com/blog/a-deep-dive-on-coreweave-innovations-for-nvidia-vera-rubin-nvl72" target="_blank" rel="noopener">Valvey/Racky</a></li>
+            <li><strong>Racky</strong> aggregates rack power, cooling and environmental sensors, and controls valves and power functions. Both are part of Mission Control and now extend to the Spectrum-6 switch racks.</li>
+            <li>DC systems engineering builds pipelines between IT and OT (DCIM, BMS/EPMS, SCADA). A dedicated OT network security engineer is being hired to set the segmentation standard. <a class="src" href="https://coreweave.com/careers/job?4701022006&amp;board=coreweave&amp;gh_jid=4701022006" target="_blank" rel="noopener">job</a></li>
+            <li><strong>Implication:</strong> software that can shut down a rack's cooling is reachable from IT, so it needs OT-grade segmentation and monitoring. This is the strongest greenfield argument on the account. <span class="tag tag-inferred">Inferred</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col" style="margin-bottom:40px;">
+      <div class="card">
+        <h2>Edge and interconnect: what sizes the firewall</h2>
+        <div class="prose">
+          <ul>
+            <li><strong>Dedicated Direct Connect:</strong> 10G, 100G or <strong>400G</strong> cross-connects with MACsec, LACP bonding into LAGs, and BGP with MD5 or TCP-AO. <strong>Virtual DX</strong> is 10G through Equinix Fabric or Megaport, with no MACsec. <span class="tag tag-confirmed">Confirmed</span> <a class="src" href="https://docs.coreweave.com/products/networking/direct-connect/about-direct-connect" target="_blank" rel="noopener">docs</a></li>
+            <li><strong>CoreWeave Interconnect</strong> (Q2 2026): private fiber to Google Cloud, with other hyperscalers to follow. Cross-cloud training data and checkpoints become a north-south flow. <a class="src" href="https://investors.coreweave.com/news/news-details/2026/CoreWeave-Reports-Strong-Second-Quarter-2026-Results/default.aspx" target="_blank" rel="noopener">Q2</a></li>
+            <li><strong>Node north-south NIC:</strong> dual-port 200GbE on B300, GB300 and Vera Rubin, so a full NVL72 rack (18 nodes) can push up to 7.2 Tb/s out of the rack. In practice the bottleneck is the AZ uplink, not the node.</li>
+            <li><strong>Public IPs:</strong> each General Access AZ has a /22 or larger public block plus /24 NAT egress pools. Every customer LoadBalancer is internet-facing by default. <a class="src" href="https://docs.coreweave.com/platform/regions/us-east" target="_blank" rel="noopener">US-EAST</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Identity, keys and access</h2>
+        <div class="prose">
+          <ul>
+            <li><strong>CoreWeave IAM:</strong> RBAC/ABAC across the Console, API, Terraform, Grafana and Object Storage. SAML for the Console, OIDC for CKS, and SCIM user provisioning from Okta or Entra. <a class="src" href="https://docs.coreweave.com/security/architecture" target="_blank" rel="noopener">docs</a></li>
+            <li><strong>SUNK User Provisioning</strong> turns a federated user into a POSIX user with SSH keys on Slurm login nodes in under a minute. <a class="src" href="https://www.coreweave.com/blog/bringing-enterprise-identity-and-key-control-to-ai-on-coreweave" target="_blank" rel="noopener">blog</a></li>
+            <li><strong>Support Access Management</strong> gates CoreWeave staff access to dedicated, single-tenant nodes. Teleport is the likely engine behind CoreWeave's own operator access. <span class="tag tag-inferred">Inferred</span></li>
+            <li><strong>Remote Key Encryption:</strong> customer keys stay in HashiCorp Vault Enterprise or a KMIP KMS/HSM, so "CoreWeave never sees plaintext".</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Internal — Palo Alto Networks account research. Not for customer distribution.
+  </footer>
+</body>
+</html>

@@ -1,0 +1,200 @@
+# Find registry items
+
+Source: https://docs.coreweave.com/products/registry/search_registry
+
+# Find registry items
+
+> Learn how to search for registries, collections, and artifact versions interactively with the UI or programmatically with queries.
+
+Find registries, collections, and artifact versions [interactively with the Registry](https://docs.coreweave.com/products/registry/search_registry.md#search-for-registry-items) or [programmatically](https://docs.coreweave.com/products/registry/search_registry.md#query-registry-items) with the W\&B Python SDK.
+
+Only items that you have permission to view appear in the search results.
+
+> [!NOTE]
+>
+> The syntax and available operators you can use to query Registry is similar, but not identical, to MongoDB queries.
+
+## Search for registry items
+
+Use the [search bar on the Registry homepage](https://docs.coreweave.com/products/registry/search_registry.md#basic-search) to find collections and registries by name. Use the [advanced search](https://docs.coreweave.com/products/registry/search_registry.md#advanced-search) to find registries, collections, or artifact versions with specific attributes such as name, tag, description, creation date, and more.
+
+### Basic search
+
+Search for registries and collections from the Registry homepage:
+
+1. Navigate to **Registry**.
+2. Enter a search term in the search bar at the top of the page.
+3. Press Enter to search.
+
+### Advanced search
+
+Use the advanced search to search for registries, collections, or artifact versions. Use filters to search for specific registry items based on attributes such as name, tag, description, creation date, and more.
+
+1. Navigate to **Registry**.
+2. Click **Advanced** at the top of the homepage.
+3. Select **Registries**, **Collections**, or **Versions** button.
+4. Click **Filters**.
+5. From left to right, select the attribute you want to filter by, the operator, and the value. You can add multiple filters to narrow down your search results.
+6. Press Enter to apply the filter.
+
+## Query registry items
+
+Use [`wandb.Api().registries()`](https://docs.coreweave.com/products/wandb/ref/python/public-api/api#method-api-registries) and *query predicates* to filter registries, collections, and artifact versions. A query predicate is a condition that specifies the criteria that returned items must meet.
+
+To create a query predicate, use a JSON-like dictionary that consists of [query name](https://docs.coreweave.com/products/registry/search_registry.md#filterable-fields), one or more [operators](https://docs.coreweave.com/products/registry/search_registry.md#supported-operators), and values. The following code snippet shows the general structure of a query predicate:
+
+```python theme={"system"}
+{
+    "query_name": {
+        "operator": value
+    }
+}
+```
+
+The following sections describe the available registry [query names](https://docs.coreweave.com/products/registry/search_registry.md#filterable-fields), [supported operators](https://docs.coreweave.com/products/registry/search_registry.md#supported-operators), and [example queries](https://docs.coreweave.com/products/registry/search_registry.md#example-queries).
+
+### Filterable fields
+
+The following table lists query names you can use based on the type of item you want to filter:
+
+| | query name |
+| - | - |
+| registries | `name`, `description`, `created_at`, `updated_at` |
+| collections | `name`, `tag`, `description`, `created_at`, `updated_at` |
+| versions | `tag`, `alias`, `created_at`, `updated_at`, `metadata` |
+
+### Supported operators
+
+W\&B supports the following comparison and logical operators for filtering registry items:
+
+#### Comparison operators
+
+| Operator | Description |
+| - | - |
+| `$eq` | Equal to |
+| `$ne` | Not equal to |
+| `$gt` | Greater than |
+| `$gte` | Greater than or equal to |
+| `$lt` | Less than |
+| `$lte` | Less than or equal to |
+
+#### Logical operators
+
+| Operator | Description |
+| - | - |
+| `$and` | Performs [AND](https://en.wikipedia.org/wiki/Logical_conjunction) logic to one or more conditions |
+| `$or` | Performs [OR](https://en.wikipedia.org/wiki/Logical_disjunction) logic to one or more conditions |
+| `$nor` | Performs [NOR](https://en.wikipedia.org/wiki/Logical_NOR) logic to one or more conditions |
+| `$not` | Performs [NOT](https://en.wikipedia.org/wiki/Negation) logic to a condition |
+
+#### Other operators
+
+| Operator | Description |
+| - | - |
+| `$regex` | Regular expression pattern matching |
+| `$exists` | Field exists/doesn't exist |
+| `$contains` | String contains value |
+
+### Example queries
+
+The following code examples demonstrate some common search scenarios.
+
+To use the `wandb.Api().registries()` method, first import the W\&B Python SDK ([`wandb`](https://docs.coreweave.com/products/wandb/ref/python)) library:
+
+```python theme={"system"}
+import wandb
+
+# (Optional) Create an instance of the wandb.Api() class for readability
+api = wandb.Api()
+```
+
+Filter all registries that contain the string `model`:
+
+```python theme={"system"}
+# Filter all registries that contain the string `model`
+registry_filters = {
+    "name": {"$regex": "model"}
+}
+
+# Returns an iterable of all registries that match the filters
+registries = api.registries(filter=registry_filters)
+```
+
+Filter all collections, independent of registry, that contains the string `yolo` in the collection name:
+
+```python theme={"system"}
+# Filter all collections, independent of registry, that 
+# contains the string `yolo` in the collection name
+collection_filters = {
+    "name": {"$regex": "yolo"}
+}
+
+# Returns an iterable of all collections that match the filters
+collections = api.registries().collections(filter=collection_filters)
+```
+
+Filter all collections, independent of registry, that contains the string `yolo` in the collection name and possesses `cnn` as a tag:
+
+```python theme={"system"}
+# Filter all collections, independent of registry, that contains the
+# string `yolo` in the collection name and possesses `cnn` as a tag
+collection_filters = {
+    "name": {"$regex": "yolo"},
+    "tag": "cnn"
+}
+
+# Returns an iterable of all collections that match the filters
+collections = api.registries().collections(filter=collection_filters)
+```
+
+Find all artifact versions that contains the string `model` and has either the tag `image-classification` or an `latest` alias:
+
+```python theme={"system"}
+# Find all artifact versions that contains the string `model` and 
+# has either the tag `image-classification` or an `latest` alias
+registry_filters = {
+    "name": {"$regex": "model"}
+}
+
+# Use logical $or operator to filter artifact versions
+version_filters = {
+    "$or": [
+        {"tag": "image-classification"},
+        {"alias": "production"}
+    ]
+}
+
+# Returns an iterable of all artifact versions that match the filters
+artifacts = api.registries(filter=registry_filters).collections().versions(filter=version_filters)
+```
+
+Each item in the `artifacts` iterable in the previous code snippet is an instance of the `Artifact` class. This means that you can access each artifact's attributes, such as `name`, `collection`, `aliases`, `tags`, `created_at`, and more:
+
+```python theme={"system"}
+for art in artifacts:
+    print(f"artifact name: {art.name}")
+    print(f"collection artifact belongs to: { art.collection.name}")
+    print(f"artifact aliases: {art.aliases}")
+    print(f"tags attached to artifact: {art.tags}")
+    print(f"artifact created at: {art.created_at}\n")
+```
+
+For a complete list of an artifact object's attributes, see the [Artifact Class](https://docs.coreweave.com/products/wandb/ref/python/experiments/artifact.md) in the W\&B Python SDK Reference docs.
+
+Filter all artifact versions, independent of registry or collection, created between `2024-01-08` and `2025-03-04` at `13:10 UTC`:
+
+```python theme={"system"}
+# Find all artifact versions created between 2024-01-08 and 2025-03-04 at 13:10 UTC. 
+
+artifact_filters = {
+    "alias": "latest",
+    "created_at" : {"$gte": "2024-01-08", "$lte": "2025-03-04 13:10:00"},
+}
+
+# Returns an iterable of all artifact versions that match the filters
+artifacts = api.registries().collections().versions(filter=artifact_filters)
+```
+
+> [!NOTE]
+>
+> Specify the date and time in `YYYY-MM-DD HH:MM:SS` format for `created_at` and `updated_at` queries. You can omit the hours, minutes, and seconds if you want to filter by date only.

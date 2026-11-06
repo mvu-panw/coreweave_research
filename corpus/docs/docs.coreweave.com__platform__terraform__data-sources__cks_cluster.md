@@ -1,0 +1,133 @@
+# coreweave_cks_cluster (Data source)
+
+Source: https://docs.coreweave.com/platform/terraform/data-sources/cks_cluster
+
+# coreweave_cks_cluster (Data source)
+
+> Terraform data source for querying information about an existing CoreWeave CKS cluster by ID
+
+Query information about an existing CoreWeave Kubernetes Service (CKS) cluster by ID. See the [CKS API reference](https://docs.coreweave.com/products/cks/reference/cks-api.md).
+
+## Example usage
+
+```terraform theme={"system"}
+data "coreweave_cks_cluster" "default" {
+  id = "1063bce6-6e5b-4b0a-b73a-7e6106b2a77c"
+}
+
+output "kube_api_access" {
+  value = data.coreweave_cks_cluster.default.kube_api_access
+}
+
+# Null until the endpoint and CA are reported.
+output "kube_api_endpoint" {
+  value = try(data.coreweave_cks_cluster.default.kube_api_access_status.public.endpoint, null)
+}
+
+output "kube_api_ca_pem" {
+  value = try(base64decode(data.coreweave_cks_cluster.default.kube_api_access_status.ca_data), null)
+}
+```
+
+## Schema
+
+### Required
+
+* `id` (String) The ID of the cluster.
+
+### Read-Only
+
+* `additional_server_sans` (Set of String) Additional Subject Alternative Names (SANs) included in the Kubernetes API server TLS certificate.
+* `api_server_endpoint` (String) The API server endpoint of the cluster.
+* `audit_policy` (String) The audit policy of the cluster.
+* `authn_webhook` (Attributes) The authentication webhook configuration of the cluster. (see [below for nested schema](#nestedatt--authn_webhook))
+* `authz_webhook` (Attributes) The authorization webhook configuration of the cluster. (see [below for nested schema](#nestedatt--authz_webhook))
+* `internal_lb_cidr_names` (List of String) The internal load balancer CIDR names of the cluster.
+* `internal_lb_cidr_names_v6` (List of String) The IPv6 internal load balancer CIDR names of the cluster.
+* `kube_api_access` (Attributes) Access configuration for the cluster's Kubernetes API server, independent of `public`. Contact CoreWeave support to enable this feature for your organization. `null` when no access configuration is set. (see [below for nested schema](#nestedatt--kube_api_access))
+* `kube_api_access_status` (Attributes) Observed state of Kubernetes API access. Values may lag a recent configuration change until the API observes it. (see [below for nested schema](#nestedatt--kube_api_access_status))
+* `kubelet` (String) Selective overrides applied to every cluster Node's kubelet configuration, as a JSON object.
+* `name` (String) The name of the cluster.
+* `node_port_range` (Attributes) The Kubernetes Service NodePort range. (see [below for nested schema](#nestedatt--node_port_range))
+* `oidc` (Attributes) The OIDC configuration of the cluster. (see [below for nested schema](#nestedatt--oidc))
+* `pod_cidr_name` (String) The pod CIDR name of the cluster.
+* `pod_cidr_name_v6` (String) The IPv6 pod CIDR name of the cluster.
+* `private_access` (Attributes) Private control plane access configuration. Null when private access is not configured. (see [below for nested schema](#nestedatt--private_access))
+* `public` (Boolean) Whether the cluster's Kubernetes API server is reachable through CoreWeave's public ingress, which supports CoreWeave-managed authentication. This setting is independent of `kube_api_access`.
+* `service_account_oidc_issuer_url` (String) The URL of the OIDC issuer for the cluster's service account tokens. This value corresponds to the `--service-account-issuer` flag on the kube-apiserver.
+* `service_cidr_name` (String) The service CIDR name of the cluster.
+* `service_cidr_name_v6` (String) The IPv6 service CIDR name of the cluster.
+* `shared_storage_cluster_id` (String) The `cluster_id` of the cluster to share storage with. Must be enabled by CoreWeave support. Contact CoreWeave support if you are interested in this feature.
+* `status` (String) The status of the cluster.
+* `tailscale` (Attributes) Tailscale configuration for the cluster. Enables cluster access over a Tailscale VPN. (see [below for nested schema](#nestedatt--tailscale))
+* `version` (String) The version of the cluster.
+* `vpc_id` (String) The VPC ID of the cluster.
+* `zone` (String) The zone of the cluster.
+
+### Nested Schema for `authn_webhook`
+
+Read-Only:
+
+* `ca` (String) The CA certificate of the authentication webhook.
+* `server` (String) The server URL of the authentication webhook.
+
+### Nested Schema for `authz_webhook`
+
+Read-Only:
+
+* `ca` (String) The CA certificate of the authorization webhook.
+* `server` (String) The server URL of the authorization webhook.
+
+### Nested Schema for `kube_api_access`
+
+Read-Only:
+
+* `public` (Attributes) Direct public access configuration. Present when direct public access is enabled. `null` when it is disabled. (see [below for nested schema](#nestedatt--kube_api_access--public))
+
+### Nested Schema for `kube_api_access.public`
+
+Read-Only:
+
+* `allow_cidrs` (Set of String) Source network prefixes allowed to reach the endpoint. An empty set allows all sources, subject to `deny_cidrs`. A non-empty set denies every other source, so `0.0.0.0/0` alone allows only IPv4 sources and `::/0` alone allows only IPv6 sources.
+* `deny_cidrs` (Set of String) Source network prefixes denied access to the endpoint. Entries take precedence over `allow_cidrs`.
+
+### Nested Schema for `kube_api_access_status`
+
+Read-Only:
+
+* `ca_data` (String) The base64-encoded PEM CA bundle for the Kubernetes API server. Use `base64decode()` to obtain the PEM text. `null` until the API reports a CA.
+* `public` (Attributes) Observed state of direct public access. `null` when the API reports no public access status. (see [below for nested schema](#nestedatt--kube_api_access_status--public))
+
+### Nested Schema for `kube_api_access_status.public`
+
+Read-Only:
+
+* `endpoint` (String) The HTTPS URL of the public Kubernetes API endpoint, suitable for a kubeconfig `server`. `null` until the endpoint is available.
+* `status` (String) Acceptance of the endpoint's route and access policy. The value is one of the following: `STATUS_UNSPECIFIED`, `STATUS_UNKNOWN`, `STATUS_PENDING`, `STATUS_ACCEPTED`, `STATUS_REJECTED`, `STATUS_ERROR`. `STATUS_ACCEPTED` does not confirm that the endpoint is reachable or that CIDR rules are enforced.
+
+### Nested Schema for `node_port_range`
+
+Read-Only:
+
+* `end` (Number) End of the NodePort range.
+* `start` (Number) Start of the NodePort range.
+
+### Nested Schema for `oidc`
+
+Read-Only:
+
+* `client_id` (String) The client ID of the OIDC configuration.
+* `issuer_url` (String) The issuer URL of the OIDC configuration.
+
+### Nested Schema for `private_access`
+
+Read-Only:
+
+* `prefix_name_ipv4` (String) Name of the IPv4 private access prefix.
+* `prefix_name_ipv6` (String) Name of the IPv6 private access prefix.
+
+### Nested Schema for `tailscale`
+
+Read-Only:
+
+* `client_id` (String) The Tailscale Client ID for the federated identity.

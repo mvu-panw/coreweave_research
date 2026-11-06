@@ -1,0 +1,74 @@
+# coreweave_inference_deployment_parameters (Data source)
+
+Source: https://docs.coreweave.com/platform/terraform/data-sources/inference_deployment_parameters
+
+# coreweave_inference_deployment_parameters (Data source)
+
+> Terraform data source for querying available Managed Inference deployment parameters
+
+Retrieve available parameter values for [CoreWeave Managed Inference deployments](https://docs.coreweave.com/products/inference/getting-started.md).
+
+## Example usage
+
+```terraform theme={"system"}
+data "coreweave_inference_deployment_parameters" "deploy_params" {}
+
+output "gateway_ids" {
+  value = data.coreweave_inference_deployment_parameters.deploy_params.gateway_ids
+}
+
+output "instance_types" {
+  value = data.coreweave_inference_deployment_parameters.deploy_params.instance_types
+}
+
+# Versions that can be used for new deployments.
+output "vllm_stable_versions" {
+  value = [
+    for version, opts in data.coreweave_inference_deployment_parameters.deploy_params.runtime_engine_options["vllm"].versions :
+    version if opts.lifecycle == "LIFECYCLE_STABLE"
+  ]
+}
+```
+
+## Schema
+
+### Read-Only
+
+* `engine_env_options` (Attributes Map, Deprecated) Available engine environment variable options per engine (keyed by engine name). (see [below for nested schema](#nestedatt--engine_env_options))
+* `gateway_ids` (Set of String) Gateway IDs available for the current organization.
+* `instance_types` (Set of String) Available instance types for deployments.
+* `runtime_config_options` (Attributes Map, Deprecated) Available runtime config options per engine (keyed by engine name). (see [below for nested schema](#nestedatt--runtime_config_options))
+* `runtime_engine_options` (Attributes Map) Available runtime versions and their options per engine (keyed by engine name). (see [below for nested schema](#nestedatt--runtime_engine_options))
+* `runtime_versions` (Attributes Map, Deprecated) Available runtime versions per engine (keyed by engine name). Includes deprecated versions, which cannot be used for new deployments. (see [below for nested schema](#nestedatt--runtime_versions))
+
+### Nested Schema for `engine_env_options`
+
+Read-Only:
+
+* `allowed_names` (List of String) Environment variable names accepted by the engine's `engine_env` field.
+
+### Nested Schema for `runtime_config_options`
+
+Read-Only:
+
+* `allowed_keys` (List of String) Configuration keys accepted by the engine's `engine_config` field.
+
+### Nested Schema for `runtime_engine_options`
+
+Read-Only:
+
+* `versions` (Attributes Map) Options per runtime version (keyed by semver version). (see [below for nested schema](#nestedatt--runtime_engine_options--versions))
+
+### Nested Schema for `runtime_engine_options.versions`
+
+Read-Only:
+
+* `config_options` (List of String) Configuration keys accepted by the `engine_config` field for this version, sorted.
+* `env_options` (List of String) Environment variable names accepted by the `engine_env` field for this version, sorted.
+* `lifecycle` (String) Lifecycle state of the version: `LIFECYCLE_STABLE`, `LIFECYCLE_UNSTABLE`, or `LIFECYCLE_DEPRECATED`. Deprecated versions remain available only to existing deployments already using them; new deployments must use another version.
+
+### Nested Schema for `runtime_versions`
+
+Read-Only:
+
+* `versions` (List of String) Available semver versions for the engine, sorted by the API.

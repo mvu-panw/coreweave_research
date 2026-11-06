@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoreWeave Account — Resources</title>
+  <link rel="icon" type="image/png" href="assets/images/PAN-Color.png" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=1" />
+</head>
+<body>
+  <nav>
+    <img src="assets/images/PAN-Color.png" alt="Palo Alto Networks" class="logo" />
+    <a class="site-title" href="index.html">CoreWeave Account</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="security-stack.html">Security Stack</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="nvidia-gear.html">NVIDIA Gear</a>
+      <a href="positioning.html">Firewall Positioning</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-header">
+      <h1>Resources</h1>
+      <p>Curated from a crawl of docs.coreweave.com, the CoreWeave blog, newsroom and site, the CoreWeave Greenhouse job board, and the Q2 2026 earnings release.</p>
+    </div>
+
+    <div class="banner">
+      <strong>Full corpus on disk:</strong> <code>~/Coreweave/corpus/</code> holds docs, blog, news and site pages as plain-text Markdown, indexed in <code>sources.csv</code>. It also has the job board snapshot (<code>careers/greenhouse.json</code>) and the earnings release (<code>ir/</code>). Ask Claude questions against it, for example "grep the corpus for every mention of BlueField."
+    </div>
+
+    <!--
+      Add a card:
+      <a class="link-card" href="https://..." target="_blank" rel="noopener">
+        <span class="lc-title">Title</span>
+        <span class="lc-desc">Why it matters for the account.</span>
+        <span class="lc-meta">source &middot; date</span>
+      </a>
+    -->
+
+    <p class="section-label">Security architecture (start here)</p>
+    <div class="link-grid">
+      <a class="link-card" href="https://docs.coreweave.com/security/architecture" target="_blank" rel="noopener">
+        <span class="lc-title">Security architecture</span>
+        <span class="lc-desc">Zones 0, 1 and 2, EVPN Type-5 on a Clos fabric, BlueField-3 per node, Cilium east-west, and "CKS clusters include CrowdStrike by default".</span>
+        <span class="lc-meta">docs &middot; security</span>
+      </a>
+      <a class="link-card" href="https://docs.coreweave.com/products/networking/nimbus" target="_blank" rel="noopener">
+        <span class="lc-title">Nimbus</span>
+        <span class="lc-desc">CoreWeave's DPU control and data plane: firewalling and encryption offload, VPC membership, and TORs used "as mere packet-forwarding devices".</span>
+        <span class="lc-meta">docs &middot; networking</span>
+      </a>
+      <a class="link-card" href="https://docs.coreweave.com/policies/terms-of-service/shared-responsibility-model" target="_blank" rel="noopener">
+        <span class="lc-title">Shared responsibility model</span>
+        <span class="lc-desc">CoreWeave owns the physical, network, VPC and encapsulation layers. Customers own Kubernetes network policies and guest firewall configuration.</span>
+        <span class="lc-meta">docs &middot; policies</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/blog/the-bar-cisos-should-set-for-ai-infrastructure" target="_blank" rel="noopener">
+        <span class="lc-title">The bar CISOs should set for AI infrastructure</span>
+        <span class="lc-desc">Covers hardware-enforced isolation, telemetry flowing "into the security tooling you already run", and the DPU blast-radius model. Use it to frame a conversation with the CISO organization.</span>
+        <span class="lc-meta">blog</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/blog/why-the-ai-loop-will-test-every-security-assumption" target="_blank" rel="noopener">
+        <span class="lc-title">Why the AI loop will test every security assumption</span>
+        <span class="lc-desc">Covers key control as containment, confidential computing, and "if a SOC already depends on ... CrowdStrike Falcon", which shows the bring-your-own-control-plane stance.</span>
+        <span class="lc-meta">blog</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/blog/bringing-enterprise-identity-and-key-control-to-ai-on-coreweave" target="_blank" rel="noopener">
+        <span class="lc-title">Enterprise identity and key control</span>
+        <span class="lc-desc">CoreWeave IAM with Okta and Entra federation, SCIM, SUNK User Provisioning, and Remote Key Encryption with Vault or KMIP.</span>
+        <span class="lc-meta">blog &middot; Sep 2026</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/blog/how-coreweave-builds-security-into-the-architecture-that-powers-modern-ai" target="_blank" rel="noopener">
+        <span class="lc-title">Security engineered by design</span>
+        <span class="lc-desc">Threat-model-first approach, SOC 2 Type II for Bare Metal and CKS, and Mission Control compliance dashboards.</span>
+        <span class="lc-meta">blog</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/blog/coreweave-zero-trust-ai-framework-your-model-your-data-your-trust" target="_blank" rel="noopener">
+        <span class="lc-title">Zero Trust AI Framework</span>
+        <span class="lc-desc">"Six layers of customer-controlled security", designed to keep CoreWeave out of the customer's trust chain.</span>
+        <span class="lc-meta">blog</span>
+      </a>
+    </div>
+
+    <p class="section-label">Network and fabric</p>
+    <div class="link-grid">
+      <a class="link-card" href="https://www.coreweave.com/blog/coreweave-builds-the-first-global-backbone-network-purpose-built-for-ai" target="_blank" rel="noopener">
+        <span class="lc-title">Global AI Network backbone</span>
+        <span class="lc-desc">51 active DCs, multiple 400G links at every PoP, MACsec everywhere, four diverse paths per PoP, and APAC and ME PoPs from Q4 2026.</span>
+        <span class="lc-meta">blog &middot; Aug 11, 2026</span>
+      </a>
+      <a class="link-card" href="https://docs.coreweave.com/products/networking/direct-connect/about-direct-connect" target="_blank" rel="noopener">
+        <span class="lc-title">Direct Connect</span>
+        <span class="lc-desc">Dedicated 10, 100 or 400G links with MACsec and LAGs, or Virtual 10G via Equinix or Megaport. Includes the on-ramp facility list with the lowest-latency region for each.</span>
+        <span class="lc-meta">docs &middot; networking</span>
+      </a>
+      <a class="link-card" href="https://docs.coreweave.com/products/networking/vpc/about-vpcs" target="_blank" rel="noopener">
+        <span class="lc-title">VPCs</span>
+        <span class="lc-desc">Host, Pod, Service and LB prefixes, default VPC per AZ, and custom prefixes for VPN or Direct Connect.</span>
+        <span class="lc-meta">docs &middot; networking</span>
+      </a>
+      <a class="link-card" href="https://docs.coreweave.com/products/networking/hpc-interconnect/about-hpc-interconnect" target="_blank" rel="noopener">
+        <span class="lc-title">HPC Interconnect</span>
+        <span class="lc-desc">Quantum-2 and Quantum-X800 InfiniBand, Spectrum-X RoCE, SHARP and GPUDirect RDMA.</span>
+        <span class="lc-meta">docs &middot; networking</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/blog/5-lessons-from-building-a-multi-plane-network-fabric-for-agentic-ai" target="_blank" rel="noopener">
+        <span class="lc-title">5 lessons from a multi-plane fabric</span>
+        <span class="lc-desc">1:1 non-blocking design, multi-plane and multi-rail, and ConnectX-9 at up to 1,600 Gb/s per GPU with adaptive routing.</span>
+        <span class="lc-meta">blog</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/blog/liquid-cooled-switching-doubles-ai-network-bandwidth-per-rack" target="_blank" rel="noopener">
+        <span class="lc-title">Liquid-cooled switching</span>
+        <span class="lc-desc">Spectrum-X SN6600-LD (102.4 Tb/s) for Vera Rubin, with switch racks managed by Valvey and Racky.</span>
+        <span class="lc-meta">blog</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/blog/powering-the-future-of-innovation-how-coreweave-is-advancing-ai-cloud-performance-with-bluefield-4" target="_blank" rel="noopener">
+        <span class="lc-title">CoreWeave + BlueField-4</span>
+        <span class="lc-desc">DPU strategy "fundamental to our architecture", with DOCA-based hardware-enforced tenant isolation. Read before any AIRS-on-DPU conversation.</span>
+        <span class="lc-meta">blog</span>
+      </a>
+      <a class="link-card" href="https://docs.coreweave.com/platform/regions/all-availability-zones" target="_blank" rel="noopener">
+        <span class="lc-title">All availability zones</span>
+        <span class="lc-desc">Every AZ with its location and General or Dedicated Access. Region pages list the public IP and NAT egress blocks.</span>
+        <span class="lc-meta">docs &middot; platform</span>
+      </a>
+    </div>
+
+    <p class="section-label">Incumbent evidence</p>
+    <div class="link-grid">
+      <a class="link-card" href="https://ir.crowdstrike.com/news-releases/news-release-details/coreweave-partners-crowdstrike-secure-mission-critical-ai" target="_blank" rel="noopener">
+        <span class="lc-title">CoreWeave partners with CrowdStrike</span>
+        <span class="lc-desc">Falcon, OverWatch and Falcon Complete offered to CoreWeave customers. CoreWeave also provides compute for CrowdStrike's SafeMind models.</span>
+        <span class="lc-meta">CrowdStrike IR &middot; Nov 2025</span>
+      </a>
+      <a class="link-card" href="https://www.crowdstrike.com/blog/how-coreweave-secures-cloud-with-crowdstrike/" target="_blank" rel="noopener">
+        <span class="lc-title">How CoreWeave uses CrowdStrike</span>
+        <span class="lc-desc">Case study: the Falcon sensor on every Kubernetes node, plus Cloud Security, Insight, OverWatch and Spotlight.</span>
+        <span class="lc-meta">CrowdStrike blog &middot; 2023</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/blog/coreweave-partner-network-jumpstarts-your-ai-stack" target="_blank" rel="noopener">
+        <span class="lc-title">CoreWeave Partner Network</span>
+        <span class="lc-desc">The curated partner integrations "anchored by years-deep collaborations with Reflection, VAST Data, ClickHouse, CrowdStrike". PANW should aim to be listed here.</span>
+        <span class="lc-meta">blog</span>
+      </a>
+      <a class="link-card" href="https://www.theregister.com/2024/10/06/cisco_ai_coreweave/" target="_blank" rel="noopener">
+        <span class="lc-title">Cisco invests in CoreWeave</span>
+        <span class="lc-desc">Cisco joined the $650M secondary share sale at a reported $23B valuation.</span>
+        <span class="lc-meta">The Register &middot; Oct 2024</span>
+      </a>
+      <a class="link-card" href="https://www.techzine.eu/blogs/infrastructure/139649/cisco-and-nvidia-lower-the-barrier-to-secure-full-stack-ai-infrastructure" target="_blank" rel="noopener">
+        <span class="lc-title">Cisco Hybrid Mesh Firewall on BlueField</span>
+        <span class="lc-desc">Cisco Secure AI Factory with NVIDIA extends firewall enforcement into BlueField DPUs. This is the competitive pitch to expect.</span>
+        <span class="lc-meta">Techzine</span>
+      </a>
+      <a class="link-card" href="https://startup.jobs/senior-security-production-engineer-coreweave-2-6770601" target="_blank" rel="noopener">
+        <span class="lc-title">Teleport in security engineering postings</span>
+        <span class="lc-desc">"Managing and operating Teleport for infrastructure access control" (Senior Security Production Engineer).</span>
+        <span class="lc-meta">job mirror &middot; 2026</span>
+      </a>
+    </div>
+
+    <p class="section-label">Careers (open roles that matter, November 2026)</p>
+    <div class="link-grid">
+      <a class="link-card" href="https://coreweave.com/careers/job?4701022006&amp;board=coreweave&amp;gh_jid=4701022006" target="_blank" rel="noopener">
+        <span class="lc-title">Sr. Network Security Engineer, Operational Technology</span>
+        <span class="lc-desc">Sets the OT security standard: segmentation, host isolation, traversal controls and remote connectivity. This is the entry point for the OT conversation.</span>
+        <span class="lc-meta">Livingston NJ / NY &middot; gh 4701022006</span>
+      </a>
+      <a class="link-card" href="https://coreweave.com/careers/job?4718155006&amp;board=coreweave&amp;gh_jid=4718155006" target="_blank" rel="noopener">
+        <span class="lc-title">Sr. Security Engineer, Networking (2 openings)</span>
+        <span class="lc-desc">Firewalls, IPS/IDS and segmentation "across the network perimeter and internal fabrics", plus zero trust and DDoS.</span>
+        <span class="lc-meta">NJ / NY / CA &middot; gh 4718155006, 4717280006</span>
+      </a>
+      <a class="link-card" href="https://coreweave.com/careers/job?4716496006&amp;board=coreweave&amp;gh_jid=4716496006" target="_blank" rel="noopener">
+        <span class="lc-title">Sr. Software Engineer I, Security Infrastructure</span>
+        <span class="lc-desc">"Operation of our SIEM as an infrastructure": they're building the SIEM pipeline themselves. This is the XSIAM wedge.</span>
+        <span class="lc-meta">NY / CA &middot; gh 4716496006</span>
+      </a>
+      <a class="link-card" href="https://coreweave.com/careers/job?4709751006&amp;board=coreweave&amp;gh_jid=4709751006" target="_blank" rel="noopener">
+        <span class="lc-title">Sr. Engineer, Security Products</span>
+        <span class="lc-desc">Builds integrations with customers' IdPs, KMS, HSMs, SIEMs and access-control systems. This is the team for a PANW integration.</span>
+        <span class="lc-meta">Sunnyvale &middot; gh 4709751006</span>
+      </a>
+      <a class="link-card" href="https://coreweave.com/careers/job?4709343006&amp;board=coreweave&amp;gh_jid=4709343006" target="_blank" rel="noopener">
+        <span class="lc-title">Sr. Specialist Field Engineer, Federal Security</span>
+        <span class="lc-desc">Zero-trust mandates, FIPS 140, STIGs, air-gapped designs, and NIPR/SIPR/JWICS work for CoreWeave Federal.</span>
+        <span class="lc-meta">Washington, D.C. &middot; gh 4709343006</span>
+      </a>
+      <a class="link-card" href="https://coreweave.com/careers/job?4712375006&amp;board=coreweave&amp;gh_jid=4712375006" target="_blank" rel="noopener">
+        <span class="lc-title">Data Center Manager, Cheyenne WY</span>
+        <span class="lc-desc">One of 12+ DC postings requiring "Cisco IOS and/or Juniper JunOS". Also useful as a map of new sites.</span>
+        <span class="lc-meta">Cheyenne WY &middot; gh 4712375006</span>
+      </a>
+    </div>
+
+    <p class="section-label">Business and footprint</p>
+    <div class="link-grid">
+      <a class="link-card" href="https://investors.coreweave.com/news/news-details/2026/CoreWeave-Reports-Strong-Second-Quarter-2026-Results/default.aspx" target="_blank" rel="noopener">
+        <span class="lc-title">Q2 2026 results</span>
+        <span class="lc-desc">$2.58B revenue, about $104B backlog plus $25B+ in early Q3, 1.5 GW active and 3.7 GW contracted. Q3 is reported November 10, 2026.</span>
+        <span class="lc-meta">IR &middot; Aug 11, 2026</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/news/coreweave-to-enter-the-u-s-federal-market" target="_blank" rel="noopener">
+        <span class="lc-title">CoreWeave Federal</span>
+        <span class="lc-desc">Federal market entry, pursuing FedRAMP and other authorizations for agencies and the Defense Industrial Base.</span>
+        <span class="lc-meta">newsroom &middot; Oct 28, 2025</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/blog/building-pennsylvania-into-the-mid-atlantic-ai-hub" target="_blank" rel="noopener">
+        <span class="lc-title">Building Pennsylvania into the Mid-Atlantic AI hub</span>
+        <span class="lc-desc">The Lancaster campus: up to $6B, 100 MW initially and up to 300 MW.</span>
+        <span class="lc-meta">blog</span>
+      </a>
+      <a class="link-card" href="https://finance.biggo.com/news/US_CORZ_2026-11-05" target="_blank" rel="noopener">
+        <span class="lc-title">Core Scientific Q3 2026</span>
+        <span class="lc-desc">485 MW of the 590 MW contracted with CoreWeave is now billing, across five campuses. The landlord owns the OT at these sites.</span>
+        <span class="lc-meta">BigGo Finance &middot; Nov 5, 2026</span>
+      </a>
+      <a class="link-card" href="https://www.coreweave.com/blog/coreweave-data-center-operations-built-for-ai" target="_blank" rel="noopener">
+        <span class="lc-title">Data center operations built for AI</span>
+        <span class="lc-desc">How CoreWeave runs its fleet: useful context for Zone 0 and OT discovery.</span>
+        <span class="lc-meta">blog</span>
+      </a>
+      <a class="link-card" href="https://www.roi-nj.com/2025/02/27/tech/coreweave-announces-new-chief-information-security-officer-jim-higgins/" target="_blank" rel="noopener">
+        <span class="lc-title">CISO Jim Higgins</span>
+        <span class="lc-desc">Appointed February 2025. Previously CISO at Snap and Block, with senior security roles at Google.</span>
+        <span class="lc-meta">ROI-NJ &middot; Feb 27, 2025</span>
+      </a>
+    </div>
+  </main>
+
+  <footer>
+    Internal — Palo Alto Networks account research. Not for customer distribution.
+  </footer>
+</body>
+</html>

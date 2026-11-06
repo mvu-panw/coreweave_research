@@ -1,0 +1,104 @@
+# coreweave_object_storage_bucket_policy (Resource)
+
+Source: https://docs.coreweave.com/platform/terraform/resources/object_storage_bucket_policy
+
+# coreweave_object_storage_bucket_policy (Resource)
+
+> Terraform resource for attaching S3-compatible access policies to CoreWeave Object Storage buckets
+
+[Bucket access policies](https://docs.coreweave.com/products/storage/object-storage/auth-access/bucket-access/bucket-policies.md) allow you to define precise, S3-compatible access control for one bucket. These are optional, and are evaluated after organization access policies. See [Manage Bucket Policies](https://docs.coreweave.com/products/storage/object-storage/auth-access/bucket-access/manage-bucket-policies.md#example-policies) for examples and further information.
+
+## Example usage
+
+```terraform theme={"system"}
+## Example using jsonencode to pass a raw JSON string to the policy attribute
+
+locals {
+  bucket_policy = {
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "allow-all"
+        Effect = "Allow"
+        Principal = {
+          "CW" : "*"
+        }
+        Action   = ["s3:*"]
+        Resource = ["arn:aws:s3:::${coreweave_object_storage_bucket.raw.name}"]
+      },
+    ]
+  }
+}
+
+resource "coreweave_object_storage_bucket" "raw" {
+  name = "bucket-policy-raw-example"
+  zone = "US-EAST-04A"
+}
+
+resource "coreweave_object_storage_bucket_policy" "raw" {
+  bucket = coreweave_object_storage_bucket.raw.name
+  policy = jsonencode(local.bucket_policy)
+}
+
+## Example using the coreweave_object_storage_bucket_policy_document data source
+
+resource "coreweave_object_storage_bucket" "doc" {
+  name = "bucket-policy-doc-example"
+  zone = "US-EAST-04A"
+}
+
+data "coreweave_object_storage_bucket_policy_document" "doc" {
+  version = "2012-10-17"
+  statement {
+    sid      = "allow-all"
+    effect   = "Allow"
+    action   = ["s3:*"]
+    resource = ["arn:aws:s3:::${coreweave_object_storage_bucket.doc.name}"]
+    principal = {
+      "CW" : ["*"]
+    }
+  }
+
+  statement {
+    sid      = "DenyIfPrefixEquals"
+    effect   = "Deny"
+    action   = ["s3:ListBucket"]
+    resource = ["arn:aws:s3:::${coreweave_object_storage_bucket.doc.name}"]
+    principal = {
+      "CW" : ["*"]
+    }
+    condition = {
+      "StringNotEquals" : {
+        "s3:prefix" : "projects"
+      }
+    }
+  }
+}
+
+resource "coreweave_object_storage_bucket_policy" "doc" {
+  bucket = coreweave_object_storage_bucket.doc.name
+  policy = data.coreweave_object_storage_bucket_policy_document.doc.json
+}
+```
+
+## Schema
+
+### Required
+
+* `bucket` (String) The name of the bucket for which to apply this policy.
+* `policy` (String) Text of the policy. Must be valid JSON. The coreweave\_object\_storage\_bucket\_policy\_document data source may be used, simply reference the `.json` attribute of the data source.
+
+## Import
+
+Import is supported using the following syntax:
+
+```bash theme={"system"}
+terraform import coreweave_object_storage_bucket_policy.default {{bucket_name}}
+```
+
+```terraform theme={"system"}
+import {
+  to = coreweave_object_storage_bucket_policy.default
+  id = "{{bucket_name}}"
+}
+```
